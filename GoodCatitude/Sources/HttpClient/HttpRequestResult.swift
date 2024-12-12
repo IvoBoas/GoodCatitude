@@ -15,6 +15,20 @@ enum HttpRequestResult<T> {
 
 extension HttpRequestResult {
 
+  func mapResult<NewT>(
+    _ mapFunction: (T) -> NewT
+  ) -> Result<NewT, AFError> {
+    switch self {
+    case .success(let value):
+      return .success(
+        mapFunction(value)
+      )
+
+    case .error(let error):
+      return .failure(error)
+    }
+  }
+
   func mapError<NewError>(
     _ mapFunction: (AFError) -> NewError
   ) -> Result<T, NewError> {
