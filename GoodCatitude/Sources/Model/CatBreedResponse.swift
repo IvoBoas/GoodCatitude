@@ -15,17 +15,16 @@ struct CatBreedResponse: Decodable, Equatable {
   let description: String?
   let lifespan: String
   let temperament: String
-  let image: CatBreedResponse.Image
+  let referenceImageId: String?
 
-}
-
-extension CatBreedResponse {
-
-  struct Image: Decodable, Equatable {
-    let id: String
-    let width: Int
-    let height: Int
-    let url: String
+  enum CodingKeys: String, CodingKey {
+    case id
+    case name
+    case origin
+    case description
+    case temperament
+    case referenceImageId = "reference_image_id"
+    case lifespan = "life_span"
   }
 
 }

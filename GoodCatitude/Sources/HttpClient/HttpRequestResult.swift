@@ -10,14 +10,14 @@ import Alamofire
 
 enum HttpRequestResult<T> {
   case success(T)
-  case error(AFError)
+  case error(HttpError)
 }
 
 extension HttpRequestResult {
 
   func mapResult<NewT>(
     _ mapFunction: (T) -> NewT
-  ) -> Result<NewT, AFError> {
+  ) -> Result<NewT, HttpError> {
     switch self {
     case .success(let value):
       return .success(
@@ -30,7 +30,7 @@ extension HttpRequestResult {
   }
 
   func mapError<NewError>(
-    _ mapFunction: (AFError) -> NewError
+    _ mapFunction: (HttpError) -> NewError
   ) -> Result<T, NewError> {
     switch self {
     case .success(let value):

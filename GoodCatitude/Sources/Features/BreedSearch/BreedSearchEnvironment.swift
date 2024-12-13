@@ -8,10 +8,10 @@
 import Foundation
 import ComposableArchitecture
 
-
 struct BreedSearchEnvironment {
 
   var fetchBreeds: (_ page: Int, _ limit: Int) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError>
+  var fetchImage: (_ id: String) async -> Result<ImageSource, BreedSearchFeature.BreedSearchError>
 
 }
 
@@ -23,7 +23,13 @@ extension BreedSearchEnvironment {
       url: "https://api.thecatapi.com/v1/breeds",
       params: [ "page": page, "limit": limit ]
     )
-    .mapError { _ in .fetchFailed }
+    .mapError { .fetchBreedsFailed($0) }
+  } fetchImage: { id in
+    let response: HttpRequestResult<CatImageResponse> = await HttpClient.getRequest(url: "https://api.thecatapi.com/v1/images/\(id)")
+
+    return response
+      .mapError { .fetchImageFailed($0)}
+      .map { .remote($0.url) }
   }
 
   static let preview = Self { page, limit in
@@ -48,18 +54,13 @@ extension BreedSearchEnvironment {
           description: nil,
           lifespan: "lifespan",
           temperament: "temperament",
-          image: .init(
-            id: "1",
-            width: 1024,
-            height: 1024,
-            url: "url"
-          )
+          referenceImageId: "0XYvRd7oD"
         )
       )
     }
 
     return .success(res)
-  }
+  } fetchImage: { _ in .success(.assets(.breed)) }
 
 }
 
@@ -76,6 +77,5 @@ extension DependencyValues {
 private enum BreedSearchEnvironmentKey: DependencyKey {
 
   static let liveValue = BreedSearchEnvironment.live
-
 
 }

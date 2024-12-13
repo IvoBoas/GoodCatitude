@@ -9,7 +9,7 @@ import Foundation
 import Alamofire
 
 final class HttpClient {
-  
+
   static let apiKey = ProcessInfo.processInfo.environment["API_KEY"]
 
   static func request<T: Decodable>(
@@ -19,7 +19,7 @@ final class HttpClient {
     params: Parameters?
   ) async -> HttpRequestResult<T> {
     var encoding: ParameterEncoding
-    
+
     switch method {
     case .post:
       encoding = JSONEncoding.default
@@ -46,14 +46,33 @@ final class HttpClient {
         switch response.result {
         case let .success(data):
           continuation.resume(returning: .success(data))
-          
+
         case let .failure(error):
-          continuation.resume(returning: .error(error))
+          print(error)
+
+          continuation.resume(returning: .error(.from(error)))
         }
       }
     }
   }
-  
+
+  static func dataRequest(from url: String) async -> HttpRequestResult<Data> {
+    return await withCheckedContinuation { continuation in
+      AF.request(url)
+        .validate()
+        .responseData { response in
+          switch response.result {
+          case .success(let data):
+            continuation.resume(returning: .success(data))
+          case .failure(let error):
+            print(error)
+
+            continuation.resume(returning: .error(.from(error)))
+          }
+        }
+    }
+  }
+
   static func getRequest<T: Decodable>(
     url: String,
     headers: [String: String] = [:],
@@ -66,5 +85,5 @@ final class HttpClient {
       params: params
     )
   }
-  
+
 }
