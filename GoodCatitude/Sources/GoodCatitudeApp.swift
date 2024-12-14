@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ComposableArchitecture
 
 @main
 struct GoodCatitudeApp: App {
@@ -13,8 +14,12 @@ struct GoodCatitudeApp: App {
 
   var body: some Scene {
     WindowGroup {
-      ContentView()
-        .environment(\.managedObjectContext, persistenceController.container.viewContext)
+      ContentView(
+        breedSearchStore: Store(initialState: BreedSearchFeature.State()) {
+          BreedSearchFeature()
+        }
+      )
+      .environment(\.managedObjectContext, persistenceController.container.viewContext)
     }
   }
 }
