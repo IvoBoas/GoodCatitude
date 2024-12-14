@@ -16,7 +16,15 @@
 		D73E47832D0AEFC800CF0181 /* GoodCatitudeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73E47822D0AEFC800CF0181 /* GoodCatitudeTests.swift */; };
 		D73E478D2D0AEFC800CF0181 /* GoodCatitudeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73E478C2D0AEFC800CF0181 /* GoodCatitudeUITests.swift */; };
 		D73E478F2D0AEFC800CF0181 /* GoodCatitudeUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73E478E2D0AEFC800CF0181 /* GoodCatitudeUITestsLaunchTests.swift */; };
-		D78102022D0DA1ED00F5EBE5 /* BreedSearchErrorMessageHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78102012D0DA1ED00F5EBE5 /* BreedSearchErrorMessageHelper.swift */; };
+		D78102022D0DA1ED00F5EBE5 /* BreedSearchFailureMessageHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78102012D0DA1ED00F5EBE5 /* BreedSearchFailureMessageHelper.swift */; };
+		D781020A2D0DDB8200F5EBE5 /* CatBreedImageMO.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78102092D0DDB8200F5EBE5 /* CatBreedImageMO.swift */; };
+		D781020C2D0DDBD700F5EBE5 /* CatBreedMO.swift in Sources */ = {isa = PBXBuildFile; fileRef = D781020B2D0DDBD700F5EBE5 /* CatBreedMO.swift */; };
+		D781020E2D0DDCF800F5EBE5 /* CatBreedCrud.swift in Sources */ = {isa = PBXBuildFile; fileRef = D781020D2D0DDCF800F5EBE5 /* CatBreedCrud.swift */; };
+		D78102102D0DE07200F5EBE5 /* AppDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = D781020F2D0DE07200F5EBE5 /* AppDependencies.swift */; };
+		D78102122D0DE1AD00F5EBE5 /* EmptyResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78102112D0DE1AD00F5EBE5 /* EmptyResult.swift */; };
+		D78102142D0DE1D100F5EBE5 /* CrudError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78102132D0DE1D100F5EBE5 /* CrudError.swift */; };
+		D78102162D0DE72600F5EBE5 /* FailureType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78102152D0DE72600F5EBE5 /* FailureType.swift */; };
+		D78102202D0E020B00F5EBE5 /* ApiEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D781021F2D0E020B00F5EBE5 /* ApiEndpoint.swift */; };
 		D79456662D0B609700D8C443 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = D79456652D0B609700D8C443 /* Alamofire */; };
 		D794566A2D0B60A000D8C443 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = D79456692D0B60A000D8C443 /* ComposableArchitecture */; };
 		D7B2EE5D2D0C5F0D002D45CE /* CatImageResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7B2EE5C2D0C5F0D002D45CE /* CatImageResponse.swift */; };
@@ -65,7 +73,15 @@
 		D73E47882D0AEFC800CF0181 /* GoodCatitudeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GoodCatitudeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D73E478C2D0AEFC800CF0181 /* GoodCatitudeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoodCatitudeUITests.swift; sourceTree = "<group>"; };
 		D73E478E2D0AEFC800CF0181 /* GoodCatitudeUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoodCatitudeUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		D78102012D0DA1ED00F5EBE5 /* BreedSearchErrorMessageHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreedSearchErrorMessageHelper.swift; sourceTree = "<group>"; };
+		D78102012D0DA1ED00F5EBE5 /* BreedSearchFailureMessageHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreedSearchFailureMessageHelper.swift; sourceTree = "<group>"; };
+		D78102092D0DDB8200F5EBE5 /* CatBreedImageMO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatBreedImageMO.swift; sourceTree = "<group>"; };
+		D781020B2D0DDBD700F5EBE5 /* CatBreedMO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatBreedMO.swift; sourceTree = "<group>"; };
+		D781020D2D0DDCF800F5EBE5 /* CatBreedCrud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatBreedCrud.swift; sourceTree = "<group>"; };
+		D781020F2D0DE07200F5EBE5 /* AppDependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDependencies.swift; sourceTree = "<group>"; };
+		D78102112D0DE1AD00F5EBE5 /* EmptyResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyResult.swift; sourceTree = "<group>"; };
+		D78102132D0DE1D100F5EBE5 /* CrudError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrudError.swift; sourceTree = "<group>"; };
+		D78102152D0DE72600F5EBE5 /* FailureType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FailureType.swift; sourceTree = "<group>"; };
+		D781021F2D0E020B00F5EBE5 /* ApiEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiEndpoint.swift; sourceTree = "<group>"; };
 		D7B2EE5C2D0C5F0D002D45CE /* CatImageResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatImageResponse.swift; sourceTree = "<group>"; };
 		D7B2EE5E2D0C62DB002D45CE /* CatImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatImage.swift; sourceTree = "<group>"; };
 		D7B62DBC2D0B618F00128C96 /* BreedSearchFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreedSearchFeature.swift; sourceTree = "<group>"; };
@@ -190,10 +206,12 @@
 				D73E476C2D0AEFC700CF0181 /* GoodCatitudeApp.swift */,
 				D73E47752D0AEFC800CF0181 /* Persistence.swift */,
 				D73E476E2D0AEFC700CF0181 /* ContentView.swift */,
+				D781020F2D0DE07200F5EBE5 /* AppDependencies.swift */,
 				D7B62DC92D0B7B9300128C96 /* SwiftUI */,
 				D7CEB94A2D0B5FB100D6D8E6 /* HttpClient */,
 				D7B62DD62D0BAD5D00128C96 /* Enum */,
 				D7B62DBE2D0B62D100128C96 /* Model */,
+				D78102052D0DDA5F00F5EBE5 /* Crud */,
 				D7752B1F2D0B1EB7001C6EC2 /* Features */,
 			);
 			path = Sources;
@@ -210,9 +228,28 @@
 		D78102002D0DA1DE00F5EBE5 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				D78102012D0DA1ED00F5EBE5 /* BreedSearchErrorMessageHelper.swift */,
+				D78102012D0DA1ED00F5EBE5 /* BreedSearchFailureMessageHelper.swift */,
 			);
 			path = Helpers;
+			sourceTree = "<group>";
+		};
+		D78102052D0DDA5F00F5EBE5 /* Crud */ = {
+			isa = PBXGroup;
+			children = (
+				D78102062D0DDA6D00F5EBE5 /* Entities */,
+				D781020D2D0DDCF800F5EBE5 /* CatBreedCrud.swift */,
+				D78102132D0DE1D100F5EBE5 /* CrudError.swift */,
+			);
+			path = Crud;
+			sourceTree = "<group>";
+		};
+		D78102062D0DDA6D00F5EBE5 /* Entities */ = {
+			isa = PBXGroup;
+			children = (
+				D781020B2D0DDBD700F5EBE5 /* CatBreedMO.swift */,
+				D78102092D0DDB8200F5EBE5 /* CatBreedImageMO.swift */,
+			);
+			path = Entities;
 			sourceTree = "<group>";
 		};
 		D7B62DBB2D0B617E00128C96 /* BreedSearch */ = {
@@ -273,6 +310,8 @@
 			isa = PBXGroup;
 			children = (
 				D7B62DD42D0BA34F00128C96 /* ImageSource.swift */,
+				D78102152D0DE72600F5EBE5 /* FailureType.swift */,
+				D78102112D0DE1AD00F5EBE5 /* EmptyResult.swift */,
 			);
 			path = Enum;
 			sourceTree = "<group>";
@@ -283,6 +322,7 @@
 				D7CEB94B2D0B5FBD00D6D8E6 /* HttpClient.swift */,
 				D7CEB94F2D0B5FCA00D6D8E6 /* HttpRequestResult.swift */,
 				D7B62DD72D0BAF4D00128C96 /* HttpError.swift */,
+				D781021F2D0E020B00F5EBE5 /* ApiEndpoint.swift */,
 			);
 			path = HttpClient;
 			sourceTree = "<group>";
@@ -429,19 +469,27 @@
 			files = (
 				D7B62DD52D0BA34F00128C96 /* ImageSource.swift in Sources */,
 				D7CEB94C2D0B5FBD00D6D8E6 /* HttpClient.swift in Sources */,
+				D78102202D0E020B00F5EBE5 /* ApiEndpoint.swift in Sources */,
 				D73E47762D0AEFC800CF0181 /* Persistence.swift in Sources */,
+				D78102162D0DE72600F5EBE5 /* FailureType.swift in Sources */,
 				D7B62DBD2D0B618F00128C96 /* BreedSearchFeature.swift in Sources */,
 				D7B2EE5F2D0C62DB002D45CE /* CatImage.swift in Sources */,
-				D78102022D0DA1ED00F5EBE5 /* BreedSearchErrorMessageHelper.swift in Sources */,
+				D78102022D0DA1ED00F5EBE5 /* BreedSearchFailureMessageHelper.swift in Sources */,
+				D78102142D0DE1D100F5EBE5 /* CrudError.swift in Sources */,
 				D73E47792D0AEFC800CF0181 /* GoodCatitude.xcdatamodeld in Sources */,
 				D7B62DCB2D0B7BA900128C96 /* View+Modifiers.swift in Sources */,
 				D73E476F2D0AEFC700CF0181 /* ContentView.swift in Sources */,
+				D78102102D0DE07200F5EBE5 /* AppDependencies.swift in Sources */,
 				D7B62DC02D0B62E500128C96 /* CatBreed.swift in Sources */,
 				D7B62DD82D0BAF4D00128C96 /* HttpError.swift in Sources */,
+				D78102122D0DE1AD00F5EBE5 /* EmptyResult.swift in Sources */,
+				D781020C2D0DDBD700F5EBE5 /* CatBreedMO.swift in Sources */,
 				D7B62DC62D0B6C0A00128C96 /* BreedSearchView.swift in Sources */,
 				D73E476D2D0AEFC700CF0181 /* GoodCatitudeApp.swift in Sources */,
 				D7B2EE5D2D0C5F0D002D45CE /* CatImageResponse.swift in Sources */,
 				D7B62DC22D0B667C00128C96 /* BreedSearchEnvironment.swift in Sources */,
+				D781020A2D0DDB8200F5EBE5 /* CatBreedImageMO.swift in Sources */,
+				D781020E2D0DDCF800F5EBE5 /* CatBreedCrud.swift in Sources */,
 				D7B62DCD2D0B803E00128C96 /* CatBreedResponse.swift in Sources */,
 				D7CEB9502D0B5FCA00D6D8E6 /* HttpRequestResult.swift in Sources */,
 			);

@@ -13,6 +13,7 @@ struct BreedSearchEnvironment {
   var fetchBreeds: (_ page: Int, _ limit: Int) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError>
   var searchBreeds: (_ query: String) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError>
   var fetchImage: (_ id: String) async -> Result<ImageSource, BreedSearchFeature.BreedSearchError>
+  var storeBreedsLocally: (_ breeds: [CatBreedResponse]) async -> EmptyResult<CrudError>
 
 }
 
@@ -21,25 +22,65 @@ extension BreedSearchEnvironment {
 
   static let live = Self { page, limit in
     return await HttpClient.getRequest(
-      url: "https://api.thecatapi.com/v1/breeds",
-      params: [ "page": page, "limit": limit ]
+      endpoint: .breeds(page: page, limit: limit)
     )
     .mapError { .fetchBreedsFailed($0) }
   } searchBreeds: { query in
     return await HttpClient.getRequest(
-      url: "https://api.thecatapi.com/v1/breeds/search",
-      params: [ "q": query, "attach_image": 1 ]
+      endpoint: .searchBreeds(query: query)
     )
     .mapError { .fetchBreedsFailed($0) }
   } fetchImage: { id in
-    let response: HttpRequestResult<CatImageResponse> = await HttpClient.getRequest(url: "https://api.thecatapi.com/v1/images/\(id)")
-
-    return response
+    return await HttpClient.getRequest(endpoint: .image(id: id))
       .mapError { .fetchImageFailed($0)}
-      .map { .remote($0.url) }
+      .map {
+        (image: CatImageResponse) -> ImageSource in .remote(image.url)
+      }
+  } storeBreedsLocally: { breeds in
+    @Dependency(\.catBreedCrud) var crud
+    @Dependency(\.persistentContainer) var container
+
+    let context = container.newBackgroundContext()
+
+    return context.performAndWait {
+      let breeds = breeds.compactMap { breed in
+        crud.createOrUpdateCatBreed(
+          id: breed.id,
+          name: breed.name,
+          origin: breed.origin,
+          breedDescription: breed.description,
+          lifespan: breed.lifespan,
+          temperament: breed.temperament,
+          imageId: breed.referenceImageId,
+          moc: context
+        )
+      }
+
+      return context.saveIfNeeded()
+    }
   }
 
-  static let preview = Self { page, limit in
+  static let preview = Self {
+    return .success(generateMockBreeds(page: $0, limit: $1))
+  } searchBreeds: { query in
+    return .success(
+      generateMockBreeds(page: 0, limit: 10)
+        .filter { $0.name.lowercased().contains(query.lowercased()) }
+    )
+  } fetchImage: { _ in
+      .success(
+        .assets(.breed)
+      )
+  } storeBreedsLocally: { _ in
+    return .success
+  }
+
+}
+
+// MARK: Preview
+extension BreedSearchEnvironment {
+
+  private static func generateMockBreeds(page: Int, limit: Int) -> [CatBreedResponse] {
     let breeds = [
       "Abyssinian",
       "Bengal",
@@ -66,25 +107,7 @@ extension BreedSearchEnvironment {
       )
     }
 
-    return .success(res)
-  } searchBreeds: { _ in
-    return .success([])
-  } fetchImage: { _ in .success(.assets(.breed)) }
-
-}
-
-// MARK: Dependency
-extension DependencyValues {
-
-  var breedSearchEnvironment: BreedSearchEnvironment {
-    get { self[BreedSearchEnvironmentKey.self] }
-    set { self[BreedSearchEnvironmentKey.self] = newValue }
+    return res
   }
-
-}
-
-private enum BreedSearchEnvironmentKey: DependencyKey {
-
-  static let liveValue = BreedSearchEnvironment.live
 
 }

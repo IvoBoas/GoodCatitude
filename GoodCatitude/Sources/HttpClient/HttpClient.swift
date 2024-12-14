@@ -13,10 +13,9 @@ final class HttpClient {
   static let apiKey = ProcessInfo.processInfo.environment["API_KEY"]
 
   static func request<T: Decodable>(
-    url: String,
+    endpoint: ApiEndpoint,
     method: HTTPMethod,
-    headers: [String: String],
-    params: Parameters?
+    headers: [String: String]
   ) async -> HttpRequestResult<T> {
     var encoding: ParameterEncoding
 
@@ -37,9 +36,9 @@ final class HttpClient {
 
     return await withCheckedContinuation { continuation in
       AF.request(
-        url,
+        endpoint.url,
         method: method,
-        parameters: params,
+        parameters: endpoint.params,
         encoding: encoding,
         headers: HTTPHeaders(newHeaders)
       ).responseDecodable(of: T.self) { response in
@@ -57,15 +56,13 @@ final class HttpClient {
   }
 
   static func getRequest<T: Decodable>(
-    url: String,
-    headers: [String: String] = [:],
-    params: Parameters? = nil
+    endpoint: ApiEndpoint,
+    headers: [String: String] = [:]
   ) async -> HttpRequestResult<T> {
     return await request(
-      url: url,
+      endpoint: endpoint,
       method: .get,
-      headers: headers,
-      params: params
+      headers: headers
     )
   }
 

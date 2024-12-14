@@ -8,6 +8,7 @@
 import Foundation
 import ComposableArchitecture
 
+// TODO: Split reducer by scopes
 @Reducer
 struct BreedSearchFeature {
 
@@ -15,7 +16,7 @@ struct BreedSearchFeature {
     var breeds: [CatBreed] = []
     var searchQuery: String = ""
     var isLoading = false
-    var errorMessage: String?
+    var failure: FailureType?
 
     let pageLimit: Int = 12
     var currentPage: Int = 0
@@ -34,15 +35,20 @@ struct BreedSearchFeature {
     case updateSearchQueryDebounced(String)
     case searchBreed
     case handleBreedsSearchResponse(Result<[CatBreedResponse], BreedSearchError>)
+
+    case storeBreedsLocally([CatBreedResponse])
+    case handleStoreResult(EmptyResult<CrudError>)
   }
 
   enum BreedSearchError: Error, Equatable {
     case fetchBreedsFailed(HttpError)
     case fetchImageFailed(HttpError)
+    case storeBreedsFailed(CrudError)
   }
 
   @Dependency(\.breedSearchEnvironment) var environment
   @Dependency(\.mainQueue) var mainQueue
+
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
@@ -73,6 +79,12 @@ struct BreedSearchFeature {
 
       case .handleBreedsSearchResponse(let result):
         return handleBreedsSearchResponse(&state, result: result)
+
+      case .storeBreedsLocally(let breeds):
+        return storeBreedsLocally(&state, breeds: breeds)
+
+      case .handleStoreResult(let result):
+        return handleStoreResult(&state, result: result)
       }
     }
   }
@@ -90,10 +102,10 @@ extension BreedSearchFeature {
     }
 
     state.isLoading = true
-    state.errorMessage = nil
+    state.failure = nil
 
-    return .run { [page = state.currentPage, pageLimit = state.pageLimit] send in
-      let result = await environment.fetchBreeds(page, pageLimit)
+    return .run { [page = state.currentPage, limit = state.pageLimit] send in
+      let result = await environment.fetchBreeds(page, limit)
 
       await send(.handleBreedsResponse(result))
     }
@@ -129,13 +141,16 @@ extension BreedSearchFeature {
 
         state.breeds += breedsToAdd
 
-        return fetchImagesForBreeds(breedsToAdd)
+        return .merge(
+          fetchImagesForBreeds(breedsToAdd),
+          .send(.storeBreedsLocally(newBreeds))
+        )
       }
 
     case .failure(let error):
       print("[BreedSearchFeature] Failed to fetch breeds: \(error)")
 
-      state.errorMessage = BreedSearchErrorMessageHelper.makeErrorMessage(for: error)
+      state.failure = BreedSearchFailureMessageHelper.makeFailure(for: error)
     }
 
     return .none
@@ -215,7 +230,7 @@ extension BreedSearchFeature {
     }
 
     state.isLoading = true
-    state.errorMessage = nil
+    state.failure = nil
 
     return .run { [query = state.searchQuery] send in
       let result = await environment.searchBreeds(query)
@@ -244,7 +259,33 @@ extension BreedSearchFeature {
     case .failure(let error):
       print("[BreedSearchFeature] Failed to search breeds: \(error)")
 
-      state.errorMessage = BreedSearchErrorMessageHelper.makeErrorMessage(for: error)
+      state.failure = BreedSearchFailureMessageHelper.makeFailure(for: error)
+    }
+
+    return .none
+  }
+
+  private func storeBreedsLocally(
+    _ state: inout State,
+    breeds: [CatBreedResponse]
+  ) -> Effect<Action> {
+    return .run { send in
+      let result = await environment.storeBreedsLocally(breeds)
+
+      await send(.handleStoreResult(result))
+    }
+  }
+
+  private func handleStoreResult(
+    _ state: inout State,
+    result: EmptyResult<CrudError>
+  ) -> Effect<Action> {
+    switch result {
+    case .success:
+      break
+
+    case .error(let error):
+      state.failure = BreedSearchFailureMessageHelper.makeFailure(for: .storeBreedsFailed(error))
     }
 
     return .none
