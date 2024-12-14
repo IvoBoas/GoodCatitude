@@ -48,28 +48,11 @@ final class HttpClient {
           continuation.resume(returning: .success(data))
 
         case let .failure(error):
-          print(error)
+          print("[HttpClient] Failed to complete request: \(error)")
 
           continuation.resume(returning: .error(.from(error)))
         }
       }
-    }
-  }
-
-  static func dataRequest(from url: String) async -> HttpRequestResult<Data> {
-    return await withCheckedContinuation { continuation in
-      AF.request(url)
-        .validate()
-        .responseData { response in
-          switch response.result {
-          case .success(let data):
-            continuation.resume(returning: .success(data))
-          case .failure(let error):
-            print(error)
-
-            continuation.resume(returning: .error(.from(error)))
-          }
-        }
     }
   }
 

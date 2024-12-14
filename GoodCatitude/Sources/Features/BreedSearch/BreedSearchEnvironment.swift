@@ -11,6 +11,7 @@ import ComposableArchitecture
 struct BreedSearchEnvironment {
 
   var fetchBreeds: (_ page: Int, _ limit: Int) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError>
+  var searchBreeds: (_ query: String) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError>
   var fetchImage: (_ id: String) async -> Result<ImageSource, BreedSearchFeature.BreedSearchError>
 
 }
@@ -22,6 +23,12 @@ extension BreedSearchEnvironment {
     return await HttpClient.getRequest(
       url: "https://api.thecatapi.com/v1/breeds",
       params: [ "page": page, "limit": limit ]
+    )
+    .mapError { .fetchBreedsFailed($0) }
+  } searchBreeds: { query in
+    return await HttpClient.getRequest(
+      url: "https://api.thecatapi.com/v1/breeds/search",
+      params: [ "q": query, "attach_image": 1 ]
     )
     .mapError { .fetchBreedsFailed($0) }
   } fetchImage: { id in
@@ -60,6 +67,8 @@ extension BreedSearchEnvironment {
     }
 
     return .success(res)
+  } searchBreeds: { _ in
+    return .success([])
   } fetchImage: { _ in .success(.assets(.breed)) }
 
 }

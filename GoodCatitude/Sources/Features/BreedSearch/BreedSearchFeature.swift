@@ -13,10 +13,11 @@ struct BreedSearchFeature {
 
   struct State: Equatable {
     var breeds: [CatBreed] = []
+    var searchQuery: String = ""
     var isLoading = false
     var errorMessage: String?
 
-    let pageLimit: Int = 10
+    let pageLimit: Int = 12
     var currentPage: Int = 0
     var hasMorePages = true
   }
@@ -25,8 +26,14 @@ struct BreedSearchFeature {
     case fetchNextPage
     case fetchNextPageIfLast(id: String)
     case handleBreedsResponse(Result<[CatBreedResponse], BreedSearchError>)
+
     case fetchImage(breedId: String, imageId: String)
     case handleImage(breedId: String, Result<ImageSource, BreedSearchError>)
+
+    case updateSearchQuery(String)
+    case updateSearchQueryDebounced(String)
+    case searchBreed
+    case handleBreedsSearchResponse(Result<[CatBreedResponse], BreedSearchError>)
   }
 
   enum BreedSearchError: Error, Equatable {
@@ -35,6 +42,7 @@ struct BreedSearchFeature {
   }
 
   @Dependency(\.breedSearchEnvironment) var environment
+  @Dependency(\.mainQueue) var mainQueue
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
@@ -53,6 +61,18 @@ struct BreedSearchFeature {
 
       case .handleImage(let breedId, let result):
         return handleImage(&state, breedId: breedId, result: result)
+
+      case .updateSearchQueryDebounced(let query):
+        return updateSearchQueryDebounced(&state, query: query)
+
+      case .updateSearchQuery(let query):
+        return updateSearchQuery(&state, query: query)
+
+      case .searchBreed:
+        return searchBreed(&state)
+
+      case .handleBreedsSearchResponse(let result):
+        return handleBreedsSearchResponse(&state, result: result)
       }
     }
   }
@@ -69,13 +89,10 @@ extension BreedSearchFeature {
       return .none
     }
 
-    let page = state.currentPage
-    let pageLimit = state.pageLimit
-
     state.isLoading = true
     state.errorMessage = nil
 
-    return .run { send in
+    return .run { [page = state.currentPage, pageLimit = state.pageLimit] send in
       let result = await environment.fetchBreeds(page, pageLimit)
 
       await send(.handleBreedsResponse(result))
@@ -112,20 +129,7 @@ extension BreedSearchFeature {
 
         state.breeds += breedsToAdd
 
-        let fetchImageEffects: [Effect<Action>] = breedsToAdd.map {
-          if let referenceImageId = $0.referenceImageId {
-            return .send(
-              .fetchImage(breedId: $0.id, imageId: referenceImageId)
-            )
-          }
-
-          // TODO: Add fallback image
-          return .send(
-            .handleImage(breedId: $0.id, .success(.assets(.breed)))
-          )
-        }
-
-        return .merge(fetchImageEffects)
+        return fetchImagesForBreeds(breedsToAdd)
       }
 
     case .failure(let error):
@@ -168,6 +172,107 @@ extension BreedSearchFeature {
     }
   }
 
+  private func updateSearchQuery(
+    _ state: inout State,
+    query: String
+  ) -> Effect<Action> {
+    guard query != state.searchQuery else {
+      return .none
+    }
+
+    state.searchQuery = query
+    state.currentPage = 0
+    state.breeds = []
+
+    if query.isEmpty {
+      state.hasMorePages = true
+
+      return .send(.fetchNextPage)
+    } else {
+      state.hasMorePages = false
+
+      return .send(.searchBreed)
+    }
+  }
+
+  private func updateSearchQueryDebounced(
+    _ state: inout State,
+    query: String
+  ) -> Effect<Action> {
+    return .run { send in
+      try await mainQueue.sleep(for: .milliseconds(150))
+
+      await send(.updateSearchQuery(query))
+    }
+    .cancellable(id: "searchQuery", cancelInFlight: true)
+  }
+
+  private func searchBreed(
+    _ state: inout State
+  ) -> Effect<Action> {
+    guard !state.searchQuery.isEmpty else {
+      return .none
+    }
+
+    state.isLoading = true
+    state.errorMessage = nil
+
+    return .run { [query = state.searchQuery] send in
+      let result = await environment.searchBreeds(query)
+
+      await send(.handleBreedsSearchResponse(result))
+    }
+  }
+
+  // TODO: Cache and reuse breeds fetched before
+  private func handleBreedsSearchResponse(
+    _ state: inout State,
+    result: Result<[CatBreedResponse], BreedSearchError>
+  ) -> Effect<Action> {
+    state.isLoading = false
+
+    switch result {
+    case .success(let newBreeds):
+      let breeds = newBreeds.map {
+        CatBreed(from: $0)
+      }
+
+      state.breeds = breeds
+
+      return fetchImagesForBreeds(breeds)
+
+    case .failure(let error):
+      print("[BreedSearchFeature] Failed to search breeds: \(error)")
+
+      state.errorMessage = makeErrorMessage(for: error)
+    }
+
+    return .none
+  }
+
+}
+
+extension BreedSearchFeature {
+
+  private func fetchImagesForBreeds(
+    _ breeds: [CatBreed]
+  ) -> Effect<Action> {
+    let fetchImageEffects: [Effect<Action>] = breeds.map {
+      if let referenceImageId = $0.referenceImageId {
+        return .send(
+          .fetchImage(breedId: $0.id, imageId: referenceImageId)
+        )
+      }
+
+      // TODO: Add fallback image
+      return .send(
+        .handleImage(breedId: $0.id, .success(.assets(.breed)))
+      )
+    }
+
+    return .merge(fetchImageEffects)
+  }
+
 }
 
 // MARK: Helpers
@@ -189,7 +294,7 @@ extension BreedSearchFeature {
       return "Failed to fetch cat breeds. Please try again later."
 
     case .fetchImageFailed:
-      return nil
+      return "Failed to fetch breed image. Please try again later"
     }
   }
 
