@@ -135,7 +135,7 @@ extension BreedSearchFeature {
     case .failure(let error):
       print("[BreedSearchFeature] Failed to fetch breeds: \(error)")
 
-      state.errorMessage = makeErrorMessage(for: error)
+      state.errorMessage = BreedSearchErrorMessageHelper.makeErrorMessage(for: error)
     }
 
     return .none
@@ -244,7 +244,7 @@ extension BreedSearchFeature {
     case .failure(let error):
       print("[BreedSearchFeature] Failed to search breeds: \(error)")
 
-      state.errorMessage = makeErrorMessage(for: error)
+      state.errorMessage = BreedSearchErrorMessageHelper.makeErrorMessage(for: error)
     }
 
     return .none
@@ -280,22 +280,6 @@ extension BreedSearchFeature {
 
   private func isLastBreed(_ state: State, id: String) -> Bool {
     return state.breeds.last?.id == id || state.breeds.isEmpty
-  }
-
-  private func makeErrorMessage(for error: BreedSearchError) -> String? {
-    switch error {
-    case .fetchBreedsFailed(.invalidResponse):
-      return "Received invalid data from the server."
-
-    case .fetchBreedsFailed(.networkUnavailable):
-      return "No internet connection. Please try again later."
-
-    case .fetchBreedsFailed(.unknown):
-      return "Failed to fetch cat breeds. Please try again later."
-
-    case .fetchImageFailed:
-      return "Failed to fetch breed image. Please try again later"
-    }
   }
 
 }

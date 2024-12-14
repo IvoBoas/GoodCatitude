@@ -16,6 +16,7 @@
 		D73E47832D0AEFC800CF0181 /* GoodCatitudeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73E47822D0AEFC800CF0181 /* GoodCatitudeTests.swift */; };
 		D73E478D2D0AEFC800CF0181 /* GoodCatitudeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73E478C2D0AEFC800CF0181 /* GoodCatitudeUITests.swift */; };
 		D73E478F2D0AEFC800CF0181 /* GoodCatitudeUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73E478E2D0AEFC800CF0181 /* GoodCatitudeUITestsLaunchTests.swift */; };
+		D78102022D0DA1ED00F5EBE5 /* BreedSearchErrorMessageHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78102012D0DA1ED00F5EBE5 /* BreedSearchErrorMessageHelper.swift */; };
 		D79456662D0B609700D8C443 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = D79456652D0B609700D8C443 /* Alamofire */; };
 		D794566A2D0B60A000D8C443 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = D79456692D0B60A000D8C443 /* ComposableArchitecture */; };
 		D7B2EE5D2D0C5F0D002D45CE /* CatImageResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7B2EE5C2D0C5F0D002D45CE /* CatImageResponse.swift */; };
@@ -64,6 +65,7 @@
 		D73E47882D0AEFC800CF0181 /* GoodCatitudeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GoodCatitudeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D73E478C2D0AEFC800CF0181 /* GoodCatitudeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoodCatitudeUITests.swift; sourceTree = "<group>"; };
 		D73E478E2D0AEFC800CF0181 /* GoodCatitudeUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoodCatitudeUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		D78102012D0DA1ED00F5EBE5 /* BreedSearchErrorMessageHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreedSearchErrorMessageHelper.swift; sourceTree = "<group>"; };
 		D7B2EE5C2D0C5F0D002D45CE /* CatImageResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatImageResponse.swift; sourceTree = "<group>"; };
 		D7B2EE5E2D0C62DB002D45CE /* CatImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatImage.swift; sourceTree = "<group>"; };
 		D7B62DBC2D0B618F00128C96 /* BreedSearchFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreedSearchFeature.swift; sourceTree = "<group>"; };
@@ -205,9 +207,18 @@
 			path = Features;
 			sourceTree = "<group>";
 		};
+		D78102002D0DA1DE00F5EBE5 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				D78102012D0DA1ED00F5EBE5 /* BreedSearchErrorMessageHelper.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
 		D7B62DBB2D0B617E00128C96 /* BreedSearch */ = {
 			isa = PBXGroup;
 			children = (
+				D78102002D0DA1DE00F5EBE5 /* Helpers */,
 				D7B62DBC2D0B618F00128C96 /* BreedSearchFeature.swift */,
 				D7B62DC12D0B667C00128C96 /* BreedSearchEnvironment.swift */,
 				D7B62DC52D0B6C0A00128C96 /* BreedSearchView.swift */,
@@ -421,6 +432,7 @@
 				D73E47762D0AEFC800CF0181 /* Persistence.swift in Sources */,
 				D7B62DBD2D0B618F00128C96 /* BreedSearchFeature.swift in Sources */,
 				D7B2EE5F2D0C62DB002D45CE /* CatImage.swift in Sources */,
+				D78102022D0DA1ED00F5EBE5 /* BreedSearchErrorMessageHelper.swift in Sources */,
 				D73E47792D0AEFC800CF0181 /* GoodCatitude.xcdatamodeld in Sources */,
 				D7B62DCB2D0B7BA900128C96 /* View+Modifiers.swift in Sources */,
 				D73E476F2D0AEFC700CF0181 /* ContentView.swift in Sources */,
