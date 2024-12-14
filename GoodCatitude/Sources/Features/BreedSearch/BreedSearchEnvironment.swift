@@ -17,33 +17,55 @@ struct BreedSearchEnvironment {
 
 }
 
-// MARK: Service Implementation
+// MARK: Live Implementation
 extension BreedSearchEnvironment {
 
-  static let live = Self { page, limit in
+  static let live = Self(
+    fetchBreeds: fetchBreeds,
+    searchBreeds: searchBreeds,
+    fetchImage: fetchImage,
+    storeBreedsLocally: storeBreedsLocally
+  )
+
+  private static func fetchBreeds(
+    page: Int,
+    limit: Int
+  ) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError> {
     return await HttpClient.getRequest(
       endpoint: .breeds(page: page, limit: limit)
     )
     .mapError { .fetchBreedsFailed($0) }
-  } searchBreeds: { query in
+  }
+
+  private static func searchBreeds(
+    query: String
+  ) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError> {
     return await HttpClient.getRequest(
       endpoint: .searchBreeds(query: query)
     )
     .mapError { .fetchBreedsFailed($0) }
-  } fetchImage: { id in
+  }
+
+  private static func fetchImage(
+    id: String
+  ) async -> Result<ImageSource, BreedSearchFeature.BreedSearchError> {
     return await HttpClient.getRequest(endpoint: .image(id: id))
       .mapError { .fetchImageFailed($0)}
-      .map {
-        (image: CatImageResponse) -> ImageSource in .remote(image.url)
+      .map { (image: CatImageResponse) -> ImageSource in
+        return .remote(image.url)
       }
-  } storeBreedsLocally: { breeds in
+  }
+
+  private static func storeBreedsLocally(
+    breeds: [CatBreedResponse]
+  ) -> EmptyResult<CrudError> {
     @Dependency(\.catBreedCrud) var crud
     @Dependency(\.persistentContainer) var container
 
     let context = container.newBackgroundContext()
 
     return context.performAndWait {
-      let breeds = breeds.compactMap { breed in
+      _ = breeds.compactMap { breed in
         crud.createOrUpdateCatBreed(
           id: breed.id,
           name: breed.name,
@@ -60,6 +82,11 @@ extension BreedSearchEnvironment {
     }
   }
 
+}
+
+// MARK: Preview Implementation
+extension BreedSearchEnvironment {
+
   static let preview = Self {
     return .success(generateMockBreeds(page: $0, limit: $1))
   } searchBreeds: { query in
@@ -74,11 +101,6 @@ extension BreedSearchEnvironment {
   } storeBreedsLocally: { _ in
     return .success
   }
-
-}
-
-// MARK: Preview
-extension BreedSearchEnvironment {
 
   private static func generateMockBreeds(page: Int, limit: Int) -> [CatBreedResponse] {
     let breeds = [

@@ -12,11 +12,11 @@ import ComposableArchitecture
 final class BreedSearchFeatureTests: XCTestCase {
 
   func testFetchNextPage_Success() async {
-    let store = await makeSUT()
+    let (store, _) = await makeSUT()
 
     await store.send(.fetchNextPage) { state in
       state.isLoading = true
-      state.errorMessage = nil
+      state.failure = nil
     }
 
     await store.receive(\.handleBreedsResponse) { state in
@@ -40,24 +40,24 @@ final class BreedSearchFeatureTests: XCTestCase {
   }
 
   func testFetchNextPage_AlreadyLoading() async {
-    let store = await makeSUT(isLoading: true)
+    let (store, _) = await makeSUT(isLoading: true)
 
     await store.send(.fetchNextPage)
   }
 
   func testFetchNextPage_NoMorePage() async {
-    let store = await makeSUT(hasMorePages: false)
+    let (store, _) = await makeSUT(hasMorePages: false)
 
     await store.send(.fetchNextPage)
   }
 
   func testFetchNextPageIfLast_WithEmptyBreeds() async {
-    let store = await makeSUT()
+    let (store, _) = await makeSUT()
 
     await store.send(.fetchNextPageIfLast(id: "1"))
     await store.receive(\.fetchNextPage) { state in
       state.isLoading = true
-      state.errorMessage = nil
+      state.failure = nil
     }
     await store.receive(\.handleBreedsResponse) { state in
       state.isLoading = false
@@ -73,25 +73,25 @@ final class BreedSearchFeatureTests: XCTestCase {
   }
 
   func testFetchNextPageIfLast_WithMatchingId() async {
-    let store = await makeSUT(breeds: BreedSearchFeatureTests.breedSeedsInitial)
+    let (store, _) = await makeSUT(breeds: BreedSearchFeatureTests.breedSeedsInitial)
 
     await store.send(.fetchNextPageIfLast(id: "2"))
     await store.receive(\.fetchNextPage) { state in
       state.isLoading = true
-      state.errorMessage = nil
+      state.failure = nil
     }
 
     await MainActor.run { store.exhaustivity = .off }
   }
 
   func testFetchNextPageIfLast_WithNonMatchingId() async {
-    let store = await makeSUT(breeds: BreedSearchFeatureTests.breedSeedsInitial)
+    let (store, _) = await makeSUT(breeds: BreedSearchFeatureTests.breedSeedsInitial)
 
     await store.send(.fetchNextPageIfLast(id: "1"))
   }
 
   func testHandleBreedsResposne_EmptyResponse() async {
-    let store = await makeSUT(isLoading: true)
+    let (store, _) = await makeSUT(isLoading: true)
 
     await store.send(.handleBreedsResponse(.success([]))) { state in
       state.isLoading = false
@@ -100,29 +100,37 @@ final class BreedSearchFeatureTests: XCTestCase {
   }
 
   func testHandleBreedsResponse_Failure() async {
-    let store = await makeSUT(isLoading: true)
+    let (store, _) = await makeSUT(isLoading: true)
     let error = BreedSearchFeature.BreedSearchError.fetchBreedsFailed(.networkUnavailable)
 
     await store.send(.handleBreedsResponse(.failure(error))) { state in
       state.isLoading = false
       state.currentPage = 0
       state.hasMorePages = true
-      state.errorMessage = "No internet connection. Please try again later."
+      state.failure = .error(message: "No internet connection. Please try again later.")
     }
   }
 
   func testUpdateSearchQuery_SameQuery() async {
     let query = "some query"
-    let store = await makeSUT(searchQuery: query)
+    let (store, _) = await makeSUT(searchQuery: query)
 
-    await store.send(.updateSearchQuery(query))
+    await store.send(.updateSearchQueryDebounced(query))
   }
 
   func testUpdateSearchQuery_EmptyQuery() async {
-    let store = await makeSUT(searchQuery: "some query")
+    let (store, clock) = await makeSUT(
+      breeds: BreedSearchFeatureTests.breedSeedsFinal,
+      searchQuery: "some query"
+    )
 
-    await store.send(.updateSearchQuery("")) { state in
+    await store.send(.updateSearchQueryDebounced("")) { state in
       state.searchQuery = ""
+    }
+
+    await clock.advance(by: .milliseconds(150))
+
+    await store.receive(\.handleSearchQuery) { state in
       state.currentPage = 0
       state.breeds = []
       state.hasMorePages = true
@@ -130,7 +138,7 @@ final class BreedSearchFeatureTests: XCTestCase {
 
     await store.receive(\.fetchNextPage) { state in
       state.isLoading = true
-      state.errorMessage = nil
+      state.failure = nil
     }
 
     await MainActor.run { store.exhaustivity = .off }
@@ -138,10 +146,15 @@ final class BreedSearchFeatureTests: XCTestCase {
 
   func testSearchBreed_Success() async {
     let query = "bengal"
-    let store = await makeSUT()
+    let (store, clock) = await makeSUT()
 
-    await store.send(.updateSearchQuery(query)) { state in
+    await store.send(.updateSearchQueryDebounced(query)) { state in
       state.searchQuery = query
+    }
+
+    await clock.advance(by: .milliseconds(150))
+
+    await store.receive(\.handleSearchQuery) { state in
       state.currentPage = 0
       state.breeds = []
       state.hasMorePages = false
@@ -149,7 +162,7 @@ final class BreedSearchFeatureTests: XCTestCase {
 
     await store.receive(\.searchBreed) { state in
       state.isLoading = true
-      state.errorMessage = nil
+      state.failure = nil
     }
 
     let response = CatBreedResponse(id: "1", name: "Bengal")
@@ -192,7 +205,7 @@ extension BreedSearchFeatureTests {
     isLoading: Bool = false,
     hasMorePages: Bool = true,
     searchQuery: String = ""
-  ) async -> TestStore<BreedSearchFeature.State, BreedSearchFeature.Action> {
+  ) async -> (TestStore<BreedSearchFeature.State, BreedSearchFeature.Action>, TestClock<Duration>) {
     let responseSeeds = BreedSearchFeatureTests.responseSeeds
 
     let testEnvironment = BreedSearchEnvironment { page, limit in
@@ -205,9 +218,13 @@ extension BreedSearchFeatureTests {
       return .success(
         .remote(id)
       )
+    } storeBreedsLocally: { _ in
+      return .success
     }
 
-    return await TestStore(
+    let clock = TestClock()
+
+    return await (TestStore(
       initialState: BreedSearchFeature.State(
         breeds: breeds,
         searchQuery: searchQuery,
@@ -215,9 +232,12 @@ extension BreedSearchFeatureTests {
         hasMorePages: hasMorePages
       )
     ) { BreedSearchFeature() } withDependencies: { dependencies in
-      dependencies.breedSearchEnvironment = testEnvironment
       dependencies.mainQueue = DispatchQueue.test.eraseToAnyScheduler()
-    }
+      dependencies.breedSearchEnvironment = testEnvironment
+      dependencies.persistentContainer = PersistenceController(inMemory: true).container
+      dependencies.catBreedCrud = CatBreedCrud()
+      dependencies.continuousClock = clock
+    }, clock)
   }
 
 }

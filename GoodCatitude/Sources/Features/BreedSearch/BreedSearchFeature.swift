@@ -31,8 +31,8 @@ struct BreedSearchFeature {
     case fetchImage(breedId: String, imageId: String)
     case handleImage(breedId: String, Result<ImageSource, BreedSearchError>)
 
-    case updateSearchQuery(String)
     case updateSearchQueryDebounced(String)
+    case handleSearchQuery
     case searchBreed
     case handleBreedsSearchResponse(Result<[CatBreedResponse], BreedSearchError>)
 
@@ -48,7 +48,7 @@ struct BreedSearchFeature {
 
   @Dependency(\.breedSearchEnvironment) var environment
   @Dependency(\.mainQueue) var mainQueue
-
+  @Dependency(\.continuousClock) var clock
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
@@ -71,8 +71,8 @@ struct BreedSearchFeature {
       case .updateSearchQueryDebounced(let query):
         return updateSearchQueryDebounced(&state, query: query)
 
-      case .updateSearchQuery(let query):
-        return updateSearchQuery(&state, query: query)
+      case .handleSearchQuery:
+        return handleSearchQuery(&state)
 
       case .searchBreed:
         return searchBreed(&state)
@@ -187,25 +187,18 @@ extension BreedSearchFeature {
     }
   }
 
-  private func updateSearchQuery(
-    _ state: inout State,
-    query: String
+  private func handleSearchQuery(
+    _ state: inout State
   ) -> Effect<Action> {
-    guard query != state.searchQuery else {
-      return .none
-    }
+    let query = state.searchQuery
 
-    state.searchQuery = query
     state.currentPage = 0
     state.breeds = []
+    state.hasMorePages = query.isEmpty
 
     if query.isEmpty {
-      state.hasMorePages = true
-
       return .send(.fetchNextPage)
     } else {
-      state.hasMorePages = false
-
       return .send(.searchBreed)
     }
   }
@@ -214,10 +207,17 @@ extension BreedSearchFeature {
     _ state: inout State,
     query: String
   ) -> Effect<Action> {
-    return .run { send in
-      try await mainQueue.sleep(for: .milliseconds(150))
+    guard query != state.searchQuery else {
+      return .none
+    }
 
-      await send(.updateSearchQuery(query))
+    state.searchQuery = query
+
+    return .run { send in
+      try await clock.sleep(for: .milliseconds(150))
+      //try await mainQueue.sleep(for: .milliseconds(150))
+
+      await send(.handleSearchQuery)
     }
     .cancellable(id: "searchQuery", cancelInFlight: true)
   }
