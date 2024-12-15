@@ -223,7 +223,7 @@ extension BreedSearchFeature {
     action: SearchBreedsDomain.Action
   ) -> Effect<Action> {
     switch action {
-    case .searchBreed(let query):
+    case .searchBreed:
       state.failure = nil
 
       return .none
@@ -234,11 +234,14 @@ extension BreedSearchFeature {
     case .updateBreeds(let breeds):
       state.breeds = breeds
 
-      return .none
+      return .merge(
+        fetchImagesForBreeds(breeds),
+        .send(.localStorageDomain(.storeBreedsLocally(breeds)))
+      )
 
     case .hadFailure(let failure):
       state.failure = failure
-      
+
       return .none
     }
   }

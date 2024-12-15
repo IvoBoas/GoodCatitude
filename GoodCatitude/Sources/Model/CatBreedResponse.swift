@@ -11,6 +11,7 @@ struct CatBreedResponse: Decodable, Equatable {
 
   let id: String
   let name: String
+  let countryCode: String?
   let origin: String?
   let description: String?
   let lifespan: String
@@ -20,6 +21,7 @@ struct CatBreedResponse: Decodable, Equatable {
   enum CodingKeys: String, CodingKey {
     case id
     case name
+    case countryCode = "country_code"
     case origin
     case description
     case temperament

@@ -26,4 +26,18 @@ extension View {
     )
   }
 
+  @inlinable func padding(
+    vertical: CGFloat = 0,
+    horizontal: CGFloat = 0
+  ) -> some View {
+    return self.padding(
+      EdgeInsets(
+        top: vertical,
+        leading: horizontal,
+        bottom: vertical,
+        trailing: horizontal
+      )
+    )
+  }
+
 }

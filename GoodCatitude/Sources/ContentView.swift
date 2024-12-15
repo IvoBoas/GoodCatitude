@@ -35,9 +35,13 @@ struct ContentView: View {
           )
         }
         .toolbarBackground(.visible, for: .tabBar)
+        .toolbar(
+          viewStore.state.breedSearchState.path.isEmpty ? .visible : .hidden, for: .tabBar
+        )
+        .animation(.default, value: viewStore.state.breedSearchState.path.isEmpty)
         .tag(AppFeature.Tab.breeds)
         
-        LocalCatBreedsList()
+        Text("Hello World")
           .padding(leading: 24, trailing: 24)
           .tabItem {
             Label(
@@ -52,35 +56,6 @@ struct ContentView: View {
       }
     }
   }
-}
-
-struct LocalCatBreedsList: View {
-
-  @FetchRequest(
-    entity: CatBreedMO.entity(),
-    sortDescriptors: [NSSortDescriptor(keyPath: \CatBreedMO.name, ascending: true)]
-  ) var items: FetchedResults<CatBreedMO>
-
-  let gridColumns: [GridItem] = Array(
-    repeating: GridItem(.flexible(), spacing: 16),
-    count: 3
-  )
-
-  var body: some View {
-    ScrollView {
-      LazyVGrid(columns: gridColumns, spacing: 16) {
-        ForEach(items, id: \.id) { breed in
-          Text(breed.name)
-        }
-      }
-      .padding(
-        leading: 24,
-        bottom: 24,
-        trailing: 24
-      )
-    }
-  }
-
 }
 
 #Preview {

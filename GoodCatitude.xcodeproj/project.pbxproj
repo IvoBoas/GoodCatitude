@@ -32,6 +32,9 @@
 		D781022C2D0EE52B00F5EBE5 /* BreedDetailsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D781022B2D0EE52B00F5EBE5 /* BreedDetailsFeature.swift */; };
 		D78102302D0EE91E00F5EBE5 /* BreedDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D781022F2D0EE91E00F5EBE5 /* BreedDetailsView.swift */; };
 		D78102322D0EF35C00F5EBE5 /* AppFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78102312D0EF35C00F5EBE5 /* AppFeature.swift */; };
+		D78102362D0F26DE00F5EBE5 /* PositionObservingScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78102352D0F26DE00F5EBE5 /* PositionObservingScrollView.swift */; };
+		D78102382D0F36BF00F5EBE5 /* ExpandableTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78102372D0F36BF00F5EBE5 /* ExpandableTextView.swift */; };
+		D781023A2D0F3BB900F5EBE5 /* ColorScheme+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78102392D0F3BB900F5EBE5 /* ColorScheme+Extensions.swift */; };
 		D79456662D0B609700D8C443 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = D79456652D0B609700D8C443 /* Alamofire */; };
 		D794566A2D0B60A000D8C443 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = D79456692D0B60A000D8C443 /* ComposableArchitecture */; };
 		D7B2EE5D2D0C5F0D002D45CE /* CatImageResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7B2EE5C2D0C5F0D002D45CE /* CatImageResponse.swift */; };
@@ -96,6 +99,9 @@
 		D781022B2D0EE52B00F5EBE5 /* BreedDetailsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreedDetailsFeature.swift; sourceTree = "<group>"; };
 		D781022F2D0EE91E00F5EBE5 /* BreedDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreedDetailsView.swift; sourceTree = "<group>"; };
 		D78102312D0EF35C00F5EBE5 /* AppFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFeature.swift; sourceTree = "<group>"; };
+		D78102352D0F26DE00F5EBE5 /* PositionObservingScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionObservingScrollView.swift; sourceTree = "<group>"; };
+		D78102372D0F36BF00F5EBE5 /* ExpandableTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableTextView.swift; sourceTree = "<group>"; };
+		D78102392D0F3BB900F5EBE5 /* ColorScheme+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ColorScheme+Extensions.swift"; sourceTree = "<group>"; };
 		D7B2EE5C2D0C5F0D002D45CE /* CatImageResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatImageResponse.swift; sourceTree = "<group>"; };
 		D7B2EE5E2D0C62DB002D45CE /* CatImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatImage.swift; sourceTree = "<group>"; };
 		D7B62DBC2D0B618F00128C96 /* BreedSearchFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreedSearchFeature.swift; sourceTree = "<group>"; };
@@ -323,6 +329,9 @@
 			isa = PBXGroup;
 			children = (
 				D7B62DCA2D0B7BA900128C96 /* View+Modifiers.swift */,
+				D78102392D0F3BB900F5EBE5 /* ColorScheme+Extensions.swift */,
+				D78102352D0F26DE00F5EBE5 /* PositionObservingScrollView.swift */,
+				D78102372D0F36BF00F5EBE5 /* ExpandableTextView.swift */,
 			);
 			path = SwiftUI;
 			sourceTree = "<group>";
@@ -506,6 +515,7 @@
 			files = (
 				D7B62DD52D0BA34F00128C96 /* ImageSource.swift in Sources */,
 				D78102232D0EC93800F5EBE5 /* LocalStorageDomain.swift in Sources */,
+				D78102362D0F26DE00F5EBE5 /* PositionObservingScrollView.swift in Sources */,
 				D7CEB94C2D0B5FBD00D6D8E6 /* HttpClient.swift in Sources */,
 				D78102202D0E020B00F5EBE5 /* ApiEndpoint.swift in Sources */,
 				D73E47762D0AEFC800CF0181 /* Persistence.swift in Sources */,
@@ -515,11 +525,13 @@
 				D78102022D0DA1ED00F5EBE5 /* BreedSearchFailureMessageHelper.swift in Sources */,
 				D78102142D0DE1D100F5EBE5 /* CrudError.swift in Sources */,
 				D73E47792D0AEFC800CF0181 /* GoodCatitude.xcdatamodeld in Sources */,
+				D781023A2D0F3BB900F5EBE5 /* ColorScheme+Extensions.swift in Sources */,
 				D7B62DCB2D0B7BA900128C96 /* View+Modifiers.swift in Sources */,
 				D73E476F2D0AEFC700CF0181 /* ContentView.swift in Sources */,
 				D78102102D0DE07200F5EBE5 /* AppDependencies.swift in Sources */,
 				D7B62DC02D0B62E500128C96 /* CatBreed.swift in Sources */,
 				D7B62DD82D0BAF4D00128C96 /* HttpError.swift in Sources */,
+				D78102382D0F36BF00F5EBE5 /* ExpandableTextView.swift in Sources */,
 				D78102122D0DE1AD00F5EBE5 /* EmptyResult.swift in Sources */,
 				D78102252D0ECCCA00F5EBE5 /* FetchBreedsDomain.swift in Sources */,
 				D781022C2D0EE52B00F5EBE5 /* BreedDetailsFeature.swift in Sources */,

@@ -2,6 +2,7 @@
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22758" systemVersion="23F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="CatBreed" representedClassName=".CatBreedMO" syncable="YES">
         <attribute name="breedDescription" optional="YES" attributeType="String"/>
+        <attribute name="countryCode" optional="YES" attributeType="String"/>
         <attribute name="id" attributeType="String"/>
         <attribute name="imageId" optional="YES" attributeType="String"/>
         <attribute name="lifespan" attributeType="String"/>

@@ -69,6 +69,7 @@ extension BreedSearchEnvironment {
         crud.createOrUpdateCatBreed(
           id: breed.id,
           name: breed.name,
+          countryCode: breed.countryCode,
           origin: breed.origin,
           breedDescription: breed.description,
           lifespan: breed.lifespan,
@@ -120,6 +121,7 @@ extension BreedSearchEnvironment {
         CatBreedResponse(
           id: "\(id)",
           name: name,
+          countryCode: nil,
           origin: nil,
           description: nil,
           lifespan: "lifespan",

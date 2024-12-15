@@ -18,6 +18,7 @@ protocol CatBreedCrudType {
   func createCatBreed(
     id: String,
     name: String,
+    countryCode: String?,
     origin: String?,
     breedDescription: String?,
     lifespan: String,
@@ -38,6 +39,7 @@ protocol CatBreedCrudType {
   func createOrUpdateCatBreed(
     id: String,
     name: String,
+    countryCode: String?,
     origin: String?,
     breedDescription: String?,
     lifespan: String,
@@ -65,6 +67,7 @@ final class CatBreedCrud: CatBreedCrudType {
   func createCatBreed(
     id: String,
     name: String,
+    countryCode: String?,
     origin: String?,
     breedDescription: String?,
     lifespan: String,
@@ -75,6 +78,7 @@ final class CatBreedCrud: CatBreedCrudType {
     return CatBreedMO(
       id: id,
       name: name,
+      countryCode: countryCode,
       origin: origin,
       breedDescription: breedDescription,
       lifespan: lifespan,
@@ -102,6 +106,7 @@ final class CatBreedCrud: CatBreedCrudType {
   func createOrUpdateCatBreed(
     id: String,
     name: String,
+    countryCode: String?,
     origin: String?,
     breedDescription: String?,
     lifespan: String,
@@ -113,6 +118,7 @@ final class CatBreedCrud: CatBreedCrudType {
       return createCatBreed(
         id: id,
         name: name,
+        countryCode: countryCode,
         origin: origin,
         breedDescription: breedDescription,
         lifespan: lifespan,

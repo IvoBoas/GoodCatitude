@@ -20,46 +20,48 @@ struct BreedSearchView: View {
 
   var body: some View {
     NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
-      VStack(spacing: 16) {
-        TextField(
-          "Search breeds",
-          text: Binding( // TODO: Remake this using composable native methods
-            get: { store.searchQuery },
-            set: { store.send(.updateSearchQueryDebounced($0)) }
+      WithViewStore(store, observe: { $0 }) { viewStore in
+        VStack(spacing: 16) {
+          TextField(
+            "Search breeds",
+            text: viewStore.binding(
+              get: \.searchQuery,
+              send: { .updateSearchQueryDebounced($0) }
+            )
           )
-        )
-        .textFieldStyle(.roundedBorder)
-        .padding(leading: 24, trailing: 24)
+          .textFieldStyle(.roundedBorder)
+          .padding(horizontal: 24)
 
-        ScrollView {
-          LazyVGrid(columns: gridColumns, spacing: 16) {
-            ForEach(store.breeds, id: \.id) { breed in
-              NavigationLink(state: BreedDetailsFeature.State(breed: breed)) {
-                CatBreedEntryView(breed: breed)
-                  .frame(maxHeight: .infinity, alignment: .top)
-                  .onAppear {
-                    store.send(.fetchNextPageIfLast(id: breed.id))
-                  }
+          ScrollView {
+            LazyVGrid(columns: gridColumns, spacing: 16) {
+              ForEach(viewStore.breeds, id: \.id) { breed in
+                NavigationLink(state: BreedDetailsFeature.State(breed: breed)) {
+                  CatBreedEntryView(breed: breed)
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    .onAppear {
+                      viewStore.send(.fetchNextPageIfLast(id: breed.id))
+                    }
+                }
+                .buttonStyle(.borderless)
               }
-              .buttonStyle(.borderless)
+            }
+            .padding(
+              leading: 24,
+              bottom: 24,
+              trailing: 24
+            )
+
+            if viewStore.isLoading {
+              ProgressView()
             }
           }
-          .padding(
-            leading: 24,
-            bottom: 24,
-            trailing: 24
-          )
-
-          if store.isLoading {
-            ProgressView()
-          }
+          .scrollIndicators(.hidden)
         }
-        .scrollIndicators(.hidden)
-      }
-      .onAppear {
-        store.send(
-          .fetchBreedsDomain(.fetchNextPage)
-        )
+        .onAppear {
+          viewStore.send(
+            .fetchBreedsDomain(.fetchNextPage)
+          )
+        }
       }
       .navigationTitle("Breeds")
     } destination: { store in
@@ -75,7 +77,7 @@ struct CatBreedEntryView: View {
 
   var body: some View {
     VStack(alignment: .center, spacing: 4) {
-      makeImage()
+      makeImageView(source: breed.image)
         .frame(maxHeight: .infinity, alignment: .top)
 
       Text(breed.name)
@@ -86,8 +88,8 @@ struct CatBreedEntryView: View {
   }
 
   @MainActor @ViewBuilder
-  private func makeImage() -> some View {
-    switch breed.image {
+  func makeImageView(source: ImageSource) -> some View {
+    switch source {
     case .loading:
       makeProgressView()
 
@@ -105,9 +107,7 @@ struct CatBreedEntryView: View {
 
     case .remote(let url):
       KFImage(URL(string: url))
-        .placeholder {
-          makeProgressView()
-        }
+        .placeholder { makeProgressView() }
         .loadDiskFileSynchronously()
         .cacheOriginalImage()
         .resizable()
@@ -142,6 +142,7 @@ struct CatBreedEntryView: View {
     breed: CatBreed(
       id: "1",
       name: "Abyssinian",
+      countryCode: nil,
       origin: nil,
       description: nil,
       lifespan: "",

@@ -12,6 +12,7 @@ class CatBreedMO: NSManagedObject {
 
   @NSManaged var id: String
   @NSManaged var name: String
+  @NSManaged var countryCode: String?
   @NSManaged var origin: String?
   @NSManaged var breedDescription: String?
   @NSManaged var lifespan: String
@@ -24,6 +25,7 @@ class CatBreedMO: NSManagedObject {
   convenience init?(
     id: String,
     name: String,
+    countryCode: String?,
     origin: String?,
     breedDescription: String?,
     lifespan: String,
@@ -39,6 +41,7 @@ class CatBreedMO: NSManagedObject {
 
     self.id = id
     self.name = name
+    self.countryCode = countryCode
     self.origin = origin
     self.breedDescription = breedDescription
     self.lifespan = lifespan

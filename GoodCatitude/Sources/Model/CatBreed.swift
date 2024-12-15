@@ -11,6 +11,7 @@ struct CatBreed: Equatable, Identifiable {
 
   let id: String
   let name: String
+  let countryCode: String?
   let origin: String?
   let description: String?
   let lifespan: String
@@ -21,6 +22,7 @@ struct CatBreed: Equatable, Identifiable {
   init(
     id: String,
     name: String,
+    countryCode: String?,
     origin: String?,
     description: String?,
     lifespan: String,
@@ -30,6 +32,7 @@ struct CatBreed: Equatable, Identifiable {
   ) {
     self.id = id
     self.name = name
+    self.countryCode = countryCode
     self.origin = origin
     self.description = description
     self.lifespan = lifespan
@@ -43,6 +46,7 @@ struct CatBreed: Equatable, Identifiable {
   ) {
     self.id = response.id
     self.name = response.name
+    self.countryCode = response.countryCode
     self.origin = response.origin
     self.description = response.description
     self.lifespan = response.lifespan
