@@ -26,6 +26,11 @@ extension DependencyValues {
     set { self[BreedSearchEnvironmentKey.self] = newValue }
   }
 
+  var favouriteBreedsEnvironment: FavouriteBreedsEnvironment {
+    get { self[FavouriteBreedsEnvironmentKey.self] }
+    set { self[FavouriteBreedsEnvironmentKey.self] = newValue }
+  }
+
 }
 
 private enum PersistentContainerKeys: DependencyKey {
@@ -38,4 +43,8 @@ private enum CatBreedCrudKey: DependencyKey {
 
 private enum BreedSearchEnvironmentKey: DependencyKey {
   static let liveValue = BreedSearchEnvironment.live
+}
+
+private enum FavouriteBreedsEnvironmentKey: DependencyKey {
+  static let liveValue = FavouriteBreedsEnvironment.live
 }

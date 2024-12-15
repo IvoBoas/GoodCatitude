@@ -15,6 +15,10 @@ protocol CatBreedCrudType {
     moc: NSManagedObjectContext
   ) -> CatBreedMO?
 
+  func getFavouriteBreeds(
+    moc: NSManagedObjectContext
+  ) -> [CatBreedMO]
+
   func createCatBreed(
     id: String,
     name: String,
@@ -58,10 +62,20 @@ final class CatBreedCrud: CatBreedCrudType {
   ) -> CatBreedMO? {
     let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "CatBreed")
 
-    fetchRequest.predicate  = NSPredicate(format: "id == %@", id)
+    fetchRequest.predicate = NSPredicate(format: "id == %@", id)
     fetchRequest.fetchLimit = 1
 
     return try? moc.fetch(fetchRequest).first as? CatBreedMO
+  }
+
+  func getFavouriteBreeds(
+    moc: NSManagedObjectContext
+  ) -> [CatBreedMO] {
+    let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "CatBreed")
+
+    fetchRequest.predicate = NSPredicate(format: "isFavourite == YES")
+
+    return (try? moc.fetch(fetchRequest) as? [CatBreedMO]) ?? []
   }
 
   func createCatBreed(
@@ -84,6 +98,7 @@ final class CatBreedCrud: CatBreedCrudType {
       lifespan: lifespan,
       temperament: temperament,
       imageId: imageId,
+      isFavourite: false,
       moc: moc
     )
   }

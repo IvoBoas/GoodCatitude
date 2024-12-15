@@ -25,8 +25,6 @@ struct BreedSearchFeature {
     var searchBreedsState = SearchBreedsDomain.State()
     var localStorageState = LocalStorageDomain.State()
     
-    var path = StackState<BreedDetailsFeature.State>()
-    
     var isLoading: Bool {
       fetchBreedsState.isLoading || searchBreedsState.isLoading
     }
@@ -34,6 +32,7 @@ struct BreedSearchFeature {
   }
   
   enum Action: Equatable {
+    case onAppear
     case fetchNextPageIfLast(id: String)
     case updateSearchQueryDebounced(String)
     case handleSearchQuery
@@ -42,10 +41,6 @@ struct BreedSearchFeature {
     case fetchImageDomain(FetchImageDomain.Action)
     case searchBreedsDomain(SearchBreedsDomain.Action)
     case localStorageDomain(LocalStorageDomain.Action)
-    
-    case path(StackAction<BreedDetailsFeature.State, BreedDetailsFeature.Action>)
-    case breedDetailsAction(BreedDetailsFeature.Action)
-    case dismissDetails
   }
   
   enum BreedSearchError: Error, Equatable {
@@ -76,6 +71,13 @@ struct BreedSearchFeature {
     
     Reduce { state, action in
       switch action {
+      case .onAppear:
+        if state.breeds.isEmpty && !state.isLoading && state.searchQuery.isEmpty {
+          return .send(.fetchBreedsDomain(.fetchNextPage))
+        }
+
+        return .none
+
       case .fetchNextPageIfLast(let id):
         return fetchNextPageIfLast(&state, id: id)
         
@@ -95,21 +97,8 @@ struct BreedSearchFeature {
         return handleSearchBreedsDomainAction(&state, action: action)
         
       case .localStorageDomain(let action):
-        return handleLocalStorageDomainAction(&state, action: action)
-        
-      case .path:
-        return .none
-        
-      case .breedDetailsAction:
-        return .none
-        
-      case .dismissDetails:
-        // TODO: Implement
-        return .none
+        return handleLocalStorageDomainAction(&state, action: action)      
       }
-    }
-    .forEach(\.path, action: \.path) {
-      BreedDetailsFeature()
     }
   }
   
@@ -125,7 +114,7 @@ extension BreedSearchFeature {
     guard isLastBreed(state, id: id), state.searchQuery.isEmpty else {
       return .none
     }
-    
+
     return .send(.fetchBreedsDomain(.fetchNextPage))
   }
   

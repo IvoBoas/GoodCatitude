@@ -17,7 +17,7 @@ struct SearchBreedsDomain {
 
   enum Action: Equatable {
     case searchBreed(String)
-    case handleBreedsSearchResponse(Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError>)
+    case handleBreedsSearchResponse(Result<[CatBreed], BreedSearchFeature.BreedSearchError>)
 
     case updateBreeds([CatBreed])
     case hadFailure(FailureType)
@@ -31,8 +31,8 @@ struct SearchBreedsDomain {
       case .searchBreed(let query):
         return searchBreed(&state, query: query)
 
-      case .handleBreedsSearchResponse(let response):
-        return handleBreedsSearchResponse(&state, result: response)
+      case .handleBreedsSearchResponse(let result):
+        return handleBreedsSearchResponse(&state, result: result)
 
       case .updateBreeds, .hadFailure:
         return .none
@@ -57,18 +57,15 @@ extension SearchBreedsDomain {
     }
   }
 
-  // TODO: Cache and reuse breeds fetched before
   private func handleBreedsSearchResponse(
     _ state: inout State,
-    result: Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError>
+    result: Result<[CatBreed], BreedSearchFeature.BreedSearchError>
   ) -> Effect<Action> {
     state.isLoading = false
 
     switch result {
     case .success(let breeds):
-      let newBreeds = breeds.map { CatBreed(from: $0) }
-
-      return .send(.updateBreeds(newBreeds))
+      return .send(.updateBreeds(breeds))
 
     case .failure(let error):
       print("[SearchBreedsDomain] Failed to search breeds: \(error)")

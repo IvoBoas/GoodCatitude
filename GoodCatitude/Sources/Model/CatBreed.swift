@@ -16,6 +16,7 @@ struct CatBreed: Equatable, Identifiable {
   let description: String?
   let lifespan: String
   let temperament: String
+  var isFavourite: Bool
   let referenceImageId: String?
   var image: ImageSource
 
@@ -27,6 +28,7 @@ struct CatBreed: Equatable, Identifiable {
     description: String?,
     lifespan: String,
     temperament: String,
+    isFavourite: Bool,
     referenceImageId: String?,
     image: ImageSource
   ) {
@@ -37,12 +39,14 @@ struct CatBreed: Equatable, Identifiable {
     self.description = description
     self.lifespan = lifespan
     self.temperament = temperament
+    self.isFavourite = isFavourite
     self.referenceImageId = referenceImageId
     self.image = image
   }
 
   init(
-    from response: CatBreedResponse
+    from response: CatBreedResponse,
+    isFavourite: Bool
   ) {
     self.id = response.id
     self.name = response.name
@@ -52,6 +56,7 @@ struct CatBreed: Equatable, Identifiable {
     self.lifespan = response.lifespan
     self.temperament = response.temperament
     self.referenceImageId = response.referenceImageId
+    self.isFavourite = isFavourite
     self.image = .loading
   }
 

@@ -7,7 +7,6 @@
 
 import SwiftUI
 import ComposableArchitecture
-import Kingfisher
 
 struct BreedSearchView: View {
 
@@ -19,122 +18,55 @@ struct BreedSearchView: View {
   )
 
   var body: some View {
-    NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
-      WithViewStore(store, observe: { $0 }) { viewStore in
-        VStack(spacing: 16) {
-          TextField(
-            "Search breeds",
-            text: viewStore.binding(
-              get: \.searchQuery,
-              send: { .updateSearchQueryDebounced($0) }
-            )
+    WithViewStore(store, observe: { $0 }) { viewStore in
+      VStack(spacing: 16) {
+        TextField(
+          "Search breeds",
+          text: viewStore.binding(
+            get: \.searchQuery,
+            send: { .updateSearchQueryDebounced($0) }
           )
-          .textFieldStyle(.roundedBorder)
-          .padding(horizontal: 24)
+        )
+        .textFieldStyle(.roundedBorder)
+        .padding(horizontal: 24)
 
-          ScrollView {
-            LazyVGrid(columns: gridColumns, spacing: 16) {
-              ForEach(viewStore.breeds, id: \.id) { breed in
-                NavigationLink(state: BreedDetailsFeature.State(breed: breed)) {
-                  CatBreedEntryView(breed: breed)
-                    .frame(maxHeight: .infinity, alignment: .top)
-                    .onAppear {
-                      viewStore.send(.fetchNextPageIfLast(id: breed.id))
+        ScrollView {
+          LazyVGrid(columns: gridColumns, spacing: 16) {
+            ForEach(viewStore.breeds, id: \.id) { breed in
+              NavigationLink(state: BreedDetailsFeature.State(breed: breed)) {
+                CatBreedEntryView(breed: breed)
+                  .frame(maxHeight: .infinity, alignment: .top)
+                  .overlay {
+                    if breed.isFavourite {
+                      Image(systemName: "heart.fill")
+                        .foregroundStyle(.red)
+                        .padding(4)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                     }
-                }
-                .buttonStyle(.borderless)
+                  }
+                  .onAppear {
+                    viewStore.send(.fetchNextPageIfLast(id: breed.id))
+                  }
               }
-            }
-            .padding(
-              leading: 24,
-              bottom: 24,
-              trailing: 24
-            )
-
-            if viewStore.isLoading {
-              ProgressView()
+              .buttonStyle(.borderless)
             }
           }
-          .scrollIndicators(.hidden)
-        }
-        .onAppear {
-          viewStore.send(
-            .fetchBreedsDomain(.fetchNextPage)
+          .padding(
+            leading: 24,
+            bottom: 24,
+            trailing: 24
           )
+
+          if viewStore.isLoading {
+            ProgressView()
+          }
         }
+        .scrollIndicators(.hidden)
       }
-      .navigationTitle("Breeds")
-    } destination: { store in
-      BreedDetailsView(store: store)
-    }
-  }
-
-}
-
-struct CatBreedEntryView: View {
-
-  let breed: CatBreed
-
-  var body: some View {
-    VStack(alignment: .center, spacing: 4) {
-      CatBreedEntryImage(source: breed.image)
-        .equatable()
-        .frame(maxHeight: .infinity, alignment: .top)
-
-      Text(breed.name)
-        .font(.footnote)
-        .lineLimit(2)
-        .multilineTextAlignment(.leading)
-    }
-  }
-
-}
-
-struct CatBreedEntryImage: View, Equatable {
-
-  let source: ImageSource
-
-  var body: some View {
-    switch source {
-    case .loading:
-      makeProgressView()
-
-    case .assets(let name):
-      Image(name)
-        .resizable()
-        .scaledToFill()
-        .frame(width: 100, height: 100)
-        .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-
-    case .local(_, let data):
-      if let image = UIImage(data: data) {
-        Image(uiImage: image)
-          .resizable()
-          .scaledToFill()
-          .frame(width: 100, height: 100)
-          .clipped()
-          .clipShape(RoundedRectangle(cornerRadius: 8))
+      .onAppear {
+        viewStore.send(.onAppear)
       }
-
-    case .remote(_, let url):
-      KFImage(URL(string: url))
-        .placeholder { makeProgressView() }
-        .loadDiskFileSynchronously()
-        .cacheOriginalImage()
-        .resizable()
-        .scaledToFill()
-        .frame(width: 100, height: 100)
-        .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
-  }
-
-  @ViewBuilder
-  private func makeProgressView() -> some View {
-    ProgressView()
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
-      .aspectRatio(1, contentMode: .fit)
   }
 
 }
@@ -146,21 +78,5 @@ struct CatBreedEntryImage: View, Equatable {
     } withDependencies: {
       $0.breedSearchEnvironment = BreedSearchEnvironment.preview
     }
-  )
-}
-
-#Preview {
-  CatBreedEntryView(
-    breed: CatBreed(
-      id: "1",
-      name: "Abyssinian",
-      countryCode: nil,
-      origin: nil,
-      description: nil,
-      lifespan: "",
-      temperament: "",
-      referenceImageId: "1",
-      image: .assets(.breed)
-    )
   )
 }

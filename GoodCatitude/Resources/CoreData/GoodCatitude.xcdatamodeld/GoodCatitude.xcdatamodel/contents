@@ -5,15 +5,10 @@
         <attribute name="countryCode" optional="YES" attributeType="String"/>
         <attribute name="id" attributeType="String"/>
         <attribute name="imageId" optional="YES" attributeType="String"/>
+        <attribute name="isFavourite" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="lifespan" attributeType="String"/>
         <attribute name="name" attributeType="String"/>
         <attribute name="origin" optional="YES" attributeType="String"/>
         <attribute name="temperament" attributeType="String"/>
-        <relationship name="image" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="CatBreedImage" inverseName="breed" inverseEntity="CatBreedImage"/>
-    </entity>
-    <entity name="CatBreedImage" representedClassName=".CatBreedImageMO" syncable="YES">
-        <attribute name="filename" attributeType="String"/>
-        <attribute name="id" attributeType="String"/>
-        <relationship name="breed" maxCount="1" deletionRule="Nullify" destinationEntity="CatBreed" inverseName="image" inverseEntity="CatBreed"/>
     </entity>
 </model>

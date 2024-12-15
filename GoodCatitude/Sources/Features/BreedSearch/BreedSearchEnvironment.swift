@@ -11,13 +11,14 @@ import ComposableArchitecture
 
 struct BreedSearchEnvironment {
 
-  var fetchBreeds: (_ page: Int, _ limit: Int) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError>
-  var searchBreeds: (_ query: String) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError>
+  var fetchBreeds: (_ page: Int, _ limit: Int) async -> Result<[CatBreed], BreedSearchFeature.BreedSearchError>
+  var searchBreeds: (_ query: String) async -> Result<[CatBreed], BreedSearchFeature.BreedSearchError>
   var fetchImage: (_ id: String) async -> Result<ImageSource, BreedSearchFeature.BreedSearchError>
   var storeBreedsLocally: (_ breeds: [CatBreed]) async -> EmptyResult<CrudError>
   var storeImageLocally: (_ data: Data, _ filename: String) -> Void
   var loadLocalImage: (_ filename: String) -> Data?
   var fetchRemoteImageData: (_ url: String) async -> Result<Data, BreedSearchFeature.BreedSearchError>
+  var updateBreedIsFavorite: (_ id: String, _ value: Bool) async -> EmptyResult<CrudError>
 
 }
 
@@ -31,26 +32,41 @@ extension BreedSearchEnvironment {
     storeBreedsLocally: storeBreedsLocallyImplementation,
     storeImageLocally: ImageStorageManager.saveImage,
     loadLocalImage: ImageStorageManager.loadImage,
-    fetchRemoteImageData: fetchRemoteImageDataImplementation
+    fetchRemoteImageData: fetchRemoteImageDataImplementation,
+    updateBreedIsFavorite: updateBreedIsFavoriteImplementation
   )
 
   private static func fetchBreedsImplementation(
     page: Int,
     limit: Int
-  ) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError> {
-    return await HttpClient.getRequest(
+  ) async -> Result<[CatBreed], BreedSearchFeature.BreedSearchError> {
+    let response: HttpRequestResult<[CatBreedResponse]> = await HttpClient.getRequest(
       endpoint: .breeds(page: page, limit: limit)
     )
-    .mapError { .fetchBreedsFailed($0) }
+
+    switch response {
+    case .success(let responses):
+      return await .success(injectIsFavourite(responses))
+
+    case .error(let error):
+      return .failure(.fetchBreedsFailed(error))
+    }
   }
 
   private static func searchBreedsImplementation(
     query: String
-  ) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError> {
-    return await HttpClient.getRequest(
+  ) async -> Result<[CatBreed], BreedSearchFeature.BreedSearchError> {
+    let response: HttpRequestResult<[CatBreedResponse]> = await HttpClient.getRequest(
       endpoint: .searchBreeds(query: query)
     )
-    .mapError { .fetchBreedsFailed($0) }
+
+    switch response {
+    case .success(let responses):
+      return await .success(injectIsFavourite(responses))
+
+    case .error(let error):
+      return .failure(.fetchBreedsFailed(error))
+    }
   }
 
   private static func fetchImageImplementation(
@@ -97,6 +113,45 @@ extension BreedSearchEnvironment {
       .mapError { .fetchBreedsFailed($0) }
   }
 
+  private static func updateBreedIsFavoriteImplementation(
+    id: String,
+    value: Bool
+  ) async -> EmptyResult<CrudError>{
+    @Dependency(\.catBreedCrud) var crud
+    @Dependency(\.persistentContainer) var container
+
+    let context = container.newBackgroundContext()
+
+    return await context.perform {
+      let entity = crud.getCatBreed(id, moc: context)
+
+      entity?.isFavourite = value
+
+      return context.saveIfNeeded()
+    }
+  }
+
+  private static func injectIsFavourite(
+    _ responses: [CatBreedResponse]
+  ) async -> [CatBreed] {
+    @Dependency(\.catBreedCrud) var crud
+    @Dependency(\.persistentContainer) var container
+
+    let context = container.viewContext
+
+    return await context.perform {
+      return responses.map {
+        let isFavourite = crud.getCatBreed($0.id, moc: context)?.isFavourite
+
+        return CatBreed(
+          from: $0,
+          isFavourite: isFavourite ?? false
+        )
+      }
+    }
+  }
+
+
 }
 
 // MARK: Preview Implementation
@@ -121,16 +176,18 @@ extension BreedSearchEnvironment {
     return UIImage(resource: .breed).pngData()
   } fetchRemoteImageData: { _ in
     return .success(UIImage(resource: .breed).pngData()!)
+  } updateBreedIsFavorite: { _, _ in
+    return .success
   }
 
-  private static func generateMockBreeds(page: Int, limit: Int) -> [CatBreedResponse] {
+  private static func generateMockBreeds(page: Int, limit: Int) -> [CatBreed] {
     let breeds = [
       "Abyssinian",
       "Bengal",
       "Siamese"
     ]
 
-    var res = [CatBreedResponse]()
+    var res = [CatBreed]()
 
     for i in 0..<limit {
       let id = page * limit + i
@@ -138,7 +195,7 @@ extension BreedSearchEnvironment {
       let name = breeds[j]
 
       res.append(
-        CatBreedResponse(
+        CatBreed(
           id: "\(id)",
           name: name,
           countryCode: nil,
@@ -146,7 +203,9 @@ extension BreedSearchEnvironment {
           description: nil,
           lifespan: "lifespan",
           temperament: "temperament",
-          referenceImageId: "0XYvRd7oD"
+          isFavourite: Bool.random(),
+          referenceImageId: "0XYvRd7oD",
+          image: .loading
         )
       )
     }

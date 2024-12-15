@@ -17,10 +17,8 @@ class CatBreedMO: NSManagedObject {
   @NSManaged var breedDescription: String?
   @NSManaged var lifespan: String
   @NSManaged var temperament: String
+  @NSManaged var isFavourite: Bool
   @NSManaged var imageId: String?
-
-  // Relationships
-  @NSManaged var image: CatBreedImageMO?
 
   convenience init?(
     id: String,
@@ -31,6 +29,7 @@ class CatBreedMO: NSManagedObject {
     lifespan: String,
     temperament: String,
     imageId: String?,
+    isFavourite: Bool,
     moc: NSManagedObjectContext
   ) {
     guard let entity = NSEntityDescription.entity(forEntityName: "CatBreed", in: moc) else {
@@ -47,7 +46,7 @@ class CatBreedMO: NSManagedObject {
     self.lifespan = lifespan
     self.temperament = temperament
     self.imageId = imageId
-    self.image = nil
+    self.isFavourite = isFavourite
   }
 
 }

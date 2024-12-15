@@ -48,8 +48,9 @@ struct BreedDetailsView: View {
 
             Spacer()
 
-            Button {} label: {
-              Image(systemName: "heart")
+            Button { viewStore.send(.toggleIsFavorite) } label: {
+              Image(systemName: viewStore.isFavourite ? "heart.fill" : "heart")
+                .foregroundStyle(.red)
             }
           }
           .frame(maxWidth: .infinity)
@@ -191,6 +192,7 @@ struct BreedDetailsView: View {
     description: "Elegant and graceful, the Siamese cat is one of the oldest and most recognizable Asian breeds.",
     lifespan: "10 - 15",
     temperament: "Affectionate, Social, Intelligent, Playful, Active",
+    isFavourite: true,
     referenceImageId: "1",
     image: .assets(.breed)
   )

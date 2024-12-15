@@ -25,7 +25,7 @@ struct FetchBreedsDomain {
   enum Action: Equatable {
     case resetPagination
     case fetchNextPage
-    case handleBreedsResponse(Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError>)
+    case handleBreedsResponse(Result<[CatBreed], BreedSearchFeature.BreedSearchError>)
 
     case fetchedBreeds([CatBreed])
     case hadFailure(FailureType)
@@ -83,7 +83,7 @@ extension FetchBreedsDomain {
 
   private func handleBreedsResponse(
     _ state: inout State,
-    result: Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError>
+    result: Result<[CatBreed], BreedSearchFeature.BreedSearchError>
   ) -> Effect<Action> {
     state.isLoading = false
 
@@ -97,9 +97,7 @@ extension FetchBreedsDomain {
 
       state.currentPage += 1
 
-      let newBreeds = breeds.map { CatBreed(from: $0) }
-
-      return .send(.fetchedBreeds(newBreeds))
+      return .send(.fetchedBreeds(breeds))
 
     case .failure(let error):
       print("[FetchBreedsDomain] Failed to fetch breeds: \(error)")
