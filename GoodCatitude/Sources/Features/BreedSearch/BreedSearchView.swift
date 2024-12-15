@@ -53,7 +53,9 @@ struct BreedSearchView: View {
         }
       }
       .onAppear {
-        viewStore.send(.fetchNextPage)
+        viewStore.send(
+          .fetchBreedsDomain(.fetchNextPage)
+        )
       }
     }
     .scrollIndicators(.hidden)
@@ -103,7 +105,8 @@ struct CatBreedEntryView: View {
         .loadDiskFileSynchronously()
         .cacheOriginalImage()
         .resizable()
-        .scaledToFit()
+        .scaledToFill()
+        .frame(width: 100, height: 100)
         .clipped()
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }

@@ -13,7 +13,7 @@ struct BreedSearchEnvironment {
   var fetchBreeds: (_ page: Int, _ limit: Int) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError>
   var searchBreeds: (_ query: String) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError>
   var fetchImage: (_ id: String) async -> Result<ImageSource, BreedSearchFeature.BreedSearchError>
-  var storeBreedsLocally: (_ breeds: [CatBreedResponse]) async -> EmptyResult<CrudError>
+  var storeBreedsLocally: (_ breeds: [CatBreed]) async -> EmptyResult<CrudError>
 
 }
 
@@ -21,13 +21,13 @@ struct BreedSearchEnvironment {
 extension BreedSearchEnvironment {
 
   static let live = Self(
-    fetchBreeds: fetchBreeds,
-    searchBreeds: searchBreeds,
-    fetchImage: fetchImage,
-    storeBreedsLocally: storeBreedsLocally
+    fetchBreeds: fetchBreedsImplementation,
+    searchBreeds: searchBreedsImplementation,
+    fetchImage: fetchImageImplementation,
+    storeBreedsLocally: storeBreedsLocallyImplementation
   )
 
-  private static func fetchBreeds(
+  private static func fetchBreedsImplementation(
     page: Int,
     limit: Int
   ) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError> {
@@ -37,7 +37,7 @@ extension BreedSearchEnvironment {
     .mapError { .fetchBreedsFailed($0) }
   }
 
-  private static func searchBreeds(
+  private static func searchBreedsImplementation(
     query: String
   ) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError> {
     return await HttpClient.getRequest(
@@ -46,7 +46,7 @@ extension BreedSearchEnvironment {
     .mapError { .fetchBreedsFailed($0) }
   }
 
-  private static func fetchImage(
+  private static func fetchImageImplementation(
     id: String
   ) async -> Result<ImageSource, BreedSearchFeature.BreedSearchError> {
     return await HttpClient.getRequest(endpoint: .image(id: id))
@@ -56,8 +56,8 @@ extension BreedSearchEnvironment {
       }
   }
 
-  private static func storeBreedsLocally(
-    breeds: [CatBreedResponse]
+  private static func storeBreedsLocallyImplementation(
+    breeds: [CatBreed]
   ) -> EmptyResult<CrudError> {
     @Dependency(\.catBreedCrud) var crud
     @Dependency(\.persistentContainer) var container

@@ -8,36 +8,37 @@
 import Foundation
 import ComposableArchitecture
 
-// TODO: Split reducer by scopes
+// TODO: What happens if search is done before ending page fetching?
+// Cancel one task when another starts
 @Reducer
 struct BreedSearchFeature {
 
   struct State: Equatable {
+
     var breeds: [CatBreed] = []
     var searchQuery: String = ""
-    var isLoading = false
     var failure: FailureType?
 
-    let pageLimit: Int = 12
-    var currentPage: Int = 0
-    var hasMorePages = true
+    var fetchBreedsState = FetchBreedsDomain.State()
+    var fetchImageState = FetchImageDomain.State()
+    var searchBreedsState = SearchBreedsDomain.State()
+    var localStorageState = LocalStorageDomain.State()
+
+    var isLoading: Bool {
+      fetchBreedsState.isLoading || searchBreedsState.isLoading
+    }
+
   }
 
   enum Action: Equatable {
-    case fetchNextPage
     case fetchNextPageIfLast(id: String)
-    case handleBreedsResponse(Result<[CatBreedResponse], BreedSearchError>)
-
-    case fetchImage(breedId: String, imageId: String)
-    case handleImage(breedId: String, Result<ImageSource, BreedSearchError>)
-
     case updateSearchQueryDebounced(String)
     case handleSearchQuery
-    case searchBreed
-    case handleBreedsSearchResponse(Result<[CatBreedResponse], BreedSearchError>)
 
-    case storeBreedsLocally([CatBreedResponse])
-    case handleStoreResult(EmptyResult<CrudError>)
+    case fetchBreedsDomain(FetchBreedsDomain.Action)
+    case fetchImageDomain(FetchImageDomain.Action)
+    case searchBreedsDomain(SearchBreedsDomain.Action)
+    case localStorageDomain(LocalStorageDomain.Action)
   }
 
   enum BreedSearchError: Error, Equatable {
@@ -47,26 +48,29 @@ struct BreedSearchFeature {
   }
 
   @Dependency(\.breedSearchEnvironment) var environment
-  @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.continuousClock) var clock
 
   var body: some ReducerOf<Self> {
+    Scope(state: \.fetchBreedsState, action: \.fetchBreedsDomain) {
+      FetchBreedsDomain()
+    }
+
+    Scope(state: \.fetchImageState, action: \.fetchImageDomain) {
+      FetchImageDomain()
+    }
+
+    Scope(state: \.searchBreedsState, action: \.searchBreedsDomain) {
+      SearchBreedsDomain()
+    }
+
+    Scope(state: \.localStorageState, action: \.localStorageDomain) {
+      LocalStorageDomain()
+    }
+
     Reduce { state, action in
       switch action {
-      case .fetchNextPage:
-        return fetchNextPage(&state)
-
       case .fetchNextPageIfLast(let id):
         return fetchNextPageIfLast(&state, id: id)
-
-      case .handleBreedsResponse(let result):
-        return handleBreedsResponse(&state, result: result)
-
-      case .fetchImage(let breedId, let imageId):
-        return fetchImage(&state, breedId: breedId, imageId: imageId)
-
-      case .handleImage(let breedId, let result):
-        return handleImage(&state, breedId: breedId, result: result)
 
       case .updateSearchQueryDebounced(let query):
         return updateSearchQueryDebounced(&state, query: query)
@@ -74,17 +78,17 @@ struct BreedSearchFeature {
       case .handleSearchQuery:
         return handleSearchQuery(&state)
 
-      case .searchBreed:
-        return searchBreed(&state)
+      case .fetchBreedsDomain(let action):
+        return handleFetchBreedsDomainAction(&state, action: action)
 
-      case .handleBreedsSearchResponse(let result):
-        return handleBreedsSearchResponse(&state, result: result)
+      case .fetchImageDomain(let action):
+        return handleFetchImageDomainAction(&state, action: action)
 
-      case .storeBreedsLocally(let breeds):
-        return storeBreedsLocally(&state, breeds: breeds)
+      case .searchBreedsDomain(let action):
+        return handleSearchBreedsDomainAction(&state, action: action)
 
-      case .handleStoreResult(let result):
-        return handleStoreResult(&state, result: result)
+      case .localStorageDomain(let action):
+        return handleLocalStorageDomainAction(&state, action: action)
       }
     }
   }
@@ -94,97 +98,15 @@ struct BreedSearchFeature {
 // MARK: Action Handlers
 extension BreedSearchFeature {
 
-  private func fetchNextPage(
-    _ state: inout State
-  ) -> Effect<Action> {
-    guard !state.isLoading, state.hasMorePages else {
-      return .none
-    }
-
-    state.isLoading = true
-    state.failure = nil
-
-    return .run { [page = state.currentPage, limit = state.pageLimit] send in
-      let result = await environment.fetchBreeds(page, limit)
-
-      await send(.handleBreedsResponse(result))
-    }
-  }
-
   private func fetchNextPageIfLast(
     _ state: inout State,
     id: String
   ) -> Effect<Action> {
-    guard isLastBreed(state, id: id) else {
+    guard isLastBreed(state, id: id), state.searchQuery.isEmpty else {
       return .none
     }
 
-    return .send(.fetchNextPage)
-  }
-
-  private func handleBreedsResponse(
-    _ state: inout State,
-    result: Result<[CatBreedResponse], BreedSearchError>
-  ) -> Effect<Action> {
-    state.isLoading = false
-
-    switch result {
-    case .success(let newBreeds):
-      if newBreeds.isEmpty {
-        state.hasMorePages = false
-      } else {
-        state.currentPage += 1
-
-        let breedsToAdd = newBreeds.map {
-          CatBreed(from: $0)
-        }
-
-        state.breeds += breedsToAdd
-
-        return .merge(
-          fetchImagesForBreeds(breedsToAdd),
-          .send(.storeBreedsLocally(newBreeds))
-        )
-      }
-
-    case .failure(let error):
-      print("[BreedSearchFeature] Failed to fetch breeds: \(error)")
-
-      state.failure = BreedSearchFailureMessageHelper.makeFailure(for: error)
-    }
-
-    return .none
-  }
-
-  private func fetchImage(
-    _ state: inout State,
-    breedId: String,
-    imageId: String
-  ) -> Effect<Action> {
-    return .run { send in
-      let result = await environment.fetchImage(imageId)
-
-      await send(.handleImage(breedId: breedId, result))
-    }
-  }
-
-  private func handleImage(
-    _ state: inout State,
-    breedId: String,
-    result: Result<ImageSource, BreedSearchError>
-  ) -> Effect<Action> {
-    switch result {
-    case .success(let source):
-      if let index = state.breeds.firstIndex(where: { $0.id == breedId }) {
-        state.breeds[index].image = source
-      }
-
-      return .none
-
-    case .failure(let error):
-      // TODO: Handle
-      return .none
-    }
+    return .send(.fetchBreedsDomain(.fetchNextPage))
   }
 
   private func handleSearchQuery(
@@ -192,15 +114,12 @@ extension BreedSearchFeature {
   ) -> Effect<Action> {
     let query = state.searchQuery
 
-    state.currentPage = 0
     state.breeds = []
-    state.hasMorePages = query.isEmpty
 
-    if query.isEmpty {
-      return .send(.fetchNextPage)
-    } else {
-      return .send(.searchBreed)
-    }
+    return .merge(
+      .send(.fetchBreedsDomain(.resetPagination)),
+      .send(query.isEmpty ? .fetchBreedsDomain(.fetchNextPage) : .searchBreedsDomain(.searchBreed(query)))
+    )
   }
 
   private func updateSearchQueryDebounced(
@@ -215,103 +134,112 @@ extension BreedSearchFeature {
 
     return .run { send in
       try await clock.sleep(for: .milliseconds(150))
-      //try await mainQueue.sleep(for: .milliseconds(150))
 
       await send(.handleSearchQuery)
     }
     .cancellable(id: "searchQuery", cancelInFlight: true)
   }
 
-  private func searchBreed(
-    _ state: inout State
+  // MARK: FetchBreedsDomain Action Handlers
+  private func handleFetchBreedsDomainAction(
+    _ state: inout State,
+    action: FetchBreedsDomain.Action
   ) -> Effect<Action> {
-    guard !state.searchQuery.isEmpty else {
+    switch action {
+    case .resetPagination, .handleBreedsResponse:
+      return .none
+
+    case .fetchNextPage:
+      if state.fetchBreedsState.canLoadNextPage {
+        state.failure = nil
+      }
+
+      return .none
+
+    case .fetchedBreeds(let breeds):
+      // Remove any possible duplicates
+      state.breeds += breeds.filter { newBreed in
+        !state.breeds.contains { $0.id == newBreed.id }
+      }
+
+      return .merge(
+        fetchImagesForBreeds(breeds),
+        .send(.localStorageDomain(.storeBreedsLocally(breeds)))
+      )
+
+    case .hadFailure(let failure):
+      state.failure = failure
+
       return .none
     }
+  }
 
-    state.isLoading = true
-    state.failure = nil
+  // MARK: FetchImageDomain Action Handlers
+  private func handleFetchImageDomainAction(
+    _ state: inout State,
+    action: FetchImageDomain.Action
+  ) -> Effect<Action> {
+    switch action {
+    case .fetchImage, .handleImage:
+      return .none
 
-    return .run { [query = state.searchQuery] send in
-      let result = await environment.searchBreeds(query)
+    case .updateImage(let breedId, let source):
+      if let index = state.breeds.firstIndex(where: { $0.id == breedId }) {
+        state.breeds[index].image = source
+      }
 
-      await send(.handleBreedsSearchResponse(result))
+      return .none
+
+    case .hadFailure(let failure):
+      state.failure = failure
+
+      return .none
     }
   }
 
-  // TODO: Cache and reuse breeds fetched before
-  private func handleBreedsSearchResponse(
+  // MARK: SearchBreedsDomain Action Handlers
+  private func handleSearchBreedsDomainAction(
     _ state: inout State,
-    result: Result<[CatBreedResponse], BreedSearchError>
+    action: SearchBreedsDomain.Action
   ) -> Effect<Action> {
-    state.isLoading = false
+    switch action {
+    case .searchBreed(let query):
+      state.failure = nil
 
-    switch result {
-    case .success(let newBreeds):
-      let breeds = newBreeds.map {
-        CatBreed(from: $0)
-      }
+      return .none
 
+    case .handleBreedsSearchResponse:
+      return .none
+
+    case .updateBreeds(let breeds):
       state.breeds = breeds
 
-      return fetchImagesForBreeds(breeds)
+      return .none
 
-    case .failure(let error):
-      print("[BreedSearchFeature] Failed to search breeds: \(error)")
-
-      state.failure = BreedSearchFailureMessageHelper.makeFailure(for: error)
+    case .hadFailure(let failure):
+      state.failure = failure
+      
+      return .none
     }
-
-    return .none
   }
 
-  private func storeBreedsLocally(
+  // MARK: LocalStorageDomain Action Handlers
+  private func handleLocalStorageDomainAction(
     _ state: inout State,
-    breeds: [CatBreedResponse]
+    action: LocalStorageDomain.Action
   ) -> Effect<Action> {
-    return .run { send in
-      let result = await environment.storeBreedsLocally(breeds)
+    switch action {
+    case .storeBreedsLocally:
+      return .none
 
-      await send(.handleStoreResult(result))
+    case .handleStoreResult:
+      return .none
+
+    case .hadFailure(let failure):
+      state.failure = failure
+
+      return .none
     }
-  }
-
-  private func handleStoreResult(
-    _ state: inout State,
-    result: EmptyResult<CrudError>
-  ) -> Effect<Action> {
-    switch result {
-    case .success:
-      break
-
-    case .error(let error):
-      state.failure = BreedSearchFailureMessageHelper.makeFailure(for: .storeBreedsFailed(error))
-    }
-
-    return .none
-  }
-
-}
-
-extension BreedSearchFeature {
-
-  private func fetchImagesForBreeds(
-    _ breeds: [CatBreed]
-  ) -> Effect<Action> {
-    let fetchImageEffects: [Effect<Action>] = breeds.map {
-      if let referenceImageId = $0.referenceImageId {
-        return .send(
-          .fetchImage(breedId: $0.id, imageId: referenceImageId)
-        )
-      }
-
-      // TODO: Add fallback image
-      return .send(
-        .handleImage(breedId: $0.id, .success(.assets(.breed)))
-      )
-    }
-
-    return .merge(fetchImageEffects)
   }
 
 }
@@ -321,6 +249,29 @@ extension BreedSearchFeature {
 
   private func isLastBreed(_ state: State, id: String) -> Bool {
     return state.breeds.last?.id == id || state.breeds.isEmpty
+  }
+
+  private func fetchImagesForBreeds(
+    _ breeds: [CatBreed]
+  ) -> Effect<Action> {
+    let fetchImageEffects: [Effect<Action>] = breeds.map {
+      if let referenceImageId = $0.referenceImageId {
+        return .send(
+          .fetchImageDomain(
+            .fetchImage($0.id, referenceImageId)
+          )
+        )
+      }
+
+      // TODO: Add fallback image
+      return .send(
+        .fetchImageDomain(
+          .handleImage($0.id, .success(.assets(.breed)))
+        )
+      )
+    }
+
+    return .merge(fetchImageEffects)
   }
 
 }

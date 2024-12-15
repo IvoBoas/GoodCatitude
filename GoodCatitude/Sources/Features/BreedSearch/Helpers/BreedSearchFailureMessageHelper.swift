@@ -9,7 +9,7 @@ import Foundation
 
 struct BreedSearchFailureMessageHelper {
 
-  static func makeFailure(for error: BreedSearchFeature.BreedSearchError) -> FailureType? {
+  static func makeFailure(for error: BreedSearchFeature.BreedSearchError) -> FailureType {
     switch error {
     case .fetchBreedsFailed(let error):
       return .error(message: makeErrorMessage(for: error))
