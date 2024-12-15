@@ -11,7 +11,7 @@ import Kingfisher
 
 struct BreedSearchView: View {
 
-  let store: StoreOf<BreedSearchFeature>
+  @Bindable var store: StoreOf<BreedSearchFeature>
 
   let gridColumns: [GridItem] = Array(
     repeating: GridItem(.flexible(), spacing: 16),
@@ -19,13 +19,13 @@ struct BreedSearchView: View {
   )
 
   var body: some View {
-    WithViewStore(store, observe: { $0 }) { viewStore in
+    NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
       VStack(spacing: 16) {
         TextField(
           "Search breeds",
-          text: viewStore.binding(
-            get: \.searchQuery,
-            send: { .updateSearchQueryDebounced($0) }
+          text: Binding( // TODO: Remake this using composable native methods
+            get: { store.searchQuery },
+            set: { store.send(.updateSearchQueryDebounced($0)) }
           )
         )
         .textFieldStyle(.roundedBorder)
@@ -33,14 +33,15 @@ struct BreedSearchView: View {
 
         ScrollView {
           LazyVGrid(columns: gridColumns, spacing: 16) {
-            ForEach(viewStore.breeds, id: \.id) { breed in
-              Button { viewStore.send(.selectBreed(breed)) } label: {
+            ForEach(store.breeds, id: \.id) { breed in
+              NavigationLink(state: BreedDetailsFeature.State(breed: breed)) {
                 CatBreedEntryView(breed: breed)
                   .frame(maxHeight: .infinity, alignment: .top)
                   .onAppear {
-                    viewStore.send(.fetchNextPageIfLast(id: breed.id))
+                    store.send(.fetchNextPageIfLast(id: breed.id))
                   }
               }
+              .buttonStyle(.borderless)
             }
           }
           .padding(
@@ -49,18 +50,21 @@ struct BreedSearchView: View {
             trailing: 24
           )
 
-          if viewStore.isLoading {
+          if store.isLoading {
             ProgressView()
           }
         }
+        .scrollIndicators(.hidden)
       }
       .onAppear {
-        viewStore.send(
+        store.send(
           .fetchBreedsDomain(.fetchNextPage)
         )
       }
+      .navigationTitle("Breeds")
+    } destination: { store in
+      BreedDetailsView(store: store)
     }
-    .scrollIndicators(.hidden)
   }
 
 }

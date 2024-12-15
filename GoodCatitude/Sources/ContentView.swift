@@ -10,30 +10,33 @@ import ComposableArchitecture
 
 struct ContentView: View {
 
-  enum Tab: String {
-    case breeds = "Breeds"
-    case other = "Other"
-  }
-
-  @State private var selectedTab: Tab = .breeds
-
-  var breedSearchStore: StoreOf<BreedSearchFeature>
+  let store: StoreOf<AppFeature>
 
   var body: some View {
-    NavigationView {
-      TabView(selection: $selectedTab) {
-        BreedSearchView(store: breedSearchStore)
-          .tabItem {
-            Label(
-              title: { Text("Breeds") },
-              icon: {
-                Image(systemName: "cat")
-              }
-            )
-          }
-          .toolbarBackground(.visible, for: .tabBar)
-          .tag(Tab.breeds)
-
+    WithViewStore(store, observe: { $0 }) { viewStore in
+      TabView(
+        selection: viewStore.binding(
+          get: { $0.selectedTab },
+          send: AppFeature.Action.tabSelected
+        )
+      ) {
+        BreedSearchView(
+          store: store.scope(
+            state: \.breedSearchState,
+            action: \.breedSearchFeature
+          )
+        )
+        .tabItem {
+          Label(
+            title: { Text("Breeds") },
+            icon: {
+              Image(systemName: "cat")
+            }
+          )
+        }
+        .toolbarBackground(.visible, for: .tabBar)
+        .tag(AppFeature.Tab.breeds)
+        
         LocalCatBreedsList()
           .padding(leading: 24, trailing: 24)
           .tabItem {
@@ -45,9 +48,8 @@ struct ContentView: View {
             )
           }
           .toolbarBackground(.visible, for: .tabBar)
-          .tag(Tab.other)
+          .tag(AppFeature.Tab.other)
       }
-      .navigationTitle(Text(selectedTab.rawValue))
     }
   }
 }
@@ -83,8 +85,8 @@ struct LocalCatBreedsList: View {
 
 #Preview {
   ContentView(
-    breedSearchStore: Store(initialState: BreedSearchFeature.State()) {
-      BreedSearchFeature()
+    store: Store(initialState: AppFeature.State()) {
+      AppFeature()
     } withDependencies: {
       $0.breedSearchEnvironment = BreedSearchEnvironment.preview
     }

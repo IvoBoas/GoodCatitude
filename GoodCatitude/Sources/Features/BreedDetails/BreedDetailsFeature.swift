@@ -11,6 +11,7 @@ import ComposableArchitecture
 @Reducer
 struct BreedDetailsFeature {
 
+  @ObservableState
   struct State: Equatable {
     let breed: CatBreed
   }

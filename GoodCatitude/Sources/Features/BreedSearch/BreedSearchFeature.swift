@@ -13,6 +13,7 @@ import ComposableArchitecture
 @Reducer
 struct BreedSearchFeature {
 
+  @ObservableState
   struct State: Equatable {
 
     var breeds: [CatBreed] = []
@@ -24,7 +25,7 @@ struct BreedSearchFeature {
     var searchBreedsState = SearchBreedsDomain.State()
     var localStorageState = LocalStorageDomain.State()
 
-    var breedDetailsState: BreedDetailsFeature.State?
+    var path = StackState<BreedDetailsFeature.State>()
 
     var isLoading: Bool {
       fetchBreedsState.isLoading || searchBreedsState.isLoading
@@ -42,7 +43,7 @@ struct BreedSearchFeature {
     case searchBreedsDomain(SearchBreedsDomain.Action)
     case localStorageDomain(LocalStorageDomain.Action)
 
-    case selectBreed(CatBreed)
+    case path(StackAction<BreedDetailsFeature.State, BreedDetailsFeature.Action>)
     case breedDetailsAction(BreedDetailsFeature.Action)
     case dismissDetails
   }
@@ -96,9 +97,7 @@ struct BreedSearchFeature {
       case .localStorageDomain(let action):
         return handleLocalStorageDomainAction(&state, action: action)
 
-      case .selectBreed(let breed):
-        state.breedDetailsState = BreedDetailsFeature.State(breed: breed)
-
+      case .path:
         return .none
 
       case .breedDetailsAction:
@@ -109,7 +108,7 @@ struct BreedSearchFeature {
         return .none
       }
     }
-    ifLet(\.breedDetailsState, action: \.breedDetailsAction) {
+    .forEach(\.path, action: \.path) {
       BreedDetailsFeature()
     }
   }

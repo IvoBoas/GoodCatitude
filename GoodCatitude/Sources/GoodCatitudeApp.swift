@@ -15,8 +15,8 @@ struct GoodCatitudeApp: App {
   var body: some Scene {
     WindowGroup {
       ContentView(
-        breedSearchStore: Store(initialState: BreedSearchFeature.State()) {
-          BreedSearchFeature()
+        store: Store(initialState: AppFeature.State()) {
+          AppFeature()
         }
       )
       .environment(\.managedObjectContext, persistenceController.container.viewContext)
