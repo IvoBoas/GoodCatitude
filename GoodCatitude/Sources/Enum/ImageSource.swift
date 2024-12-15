@@ -12,7 +12,7 @@ enum ImageSource: Equatable {
 
   case loading
   case assets(ImageResource)
-  case data(Data)
-  case remote(String)
+  case local(_ imageId: String, Data)
+  case remote(_ imageId: String, _ url: String)
 
 }

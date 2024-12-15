@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import ComposableArchitecture
 
 struct BreedSearchEnvironment {
@@ -14,6 +15,9 @@ struct BreedSearchEnvironment {
   var searchBreeds: (_ query: String) async -> Result<[CatBreedResponse], BreedSearchFeature.BreedSearchError>
   var fetchImage: (_ id: String) async -> Result<ImageSource, BreedSearchFeature.BreedSearchError>
   var storeBreedsLocally: (_ breeds: [CatBreed]) async -> EmptyResult<CrudError>
+  var storeImageLocally: (_ data: Data, _ filename: String) -> Void
+  var loadLocalImage: (_ filename: String) -> Data?
+  var fetchRemoteImageData: (_ url: String) async -> Result<Data, BreedSearchFeature.BreedSearchError>
 
 }
 
@@ -24,7 +28,10 @@ extension BreedSearchEnvironment {
     fetchBreeds: fetchBreedsImplementation,
     searchBreeds: searchBreedsImplementation,
     fetchImage: fetchImageImplementation,
-    storeBreedsLocally: storeBreedsLocallyImplementation
+    storeBreedsLocally: storeBreedsLocallyImplementation,
+    storeImageLocally: ImageStorageManager.saveImage,
+    loadLocalImage: ImageStorageManager.loadImage,
+    fetchRemoteImageData: fetchRemoteImageDataImplementation
   )
 
   private static func fetchBreedsImplementation(
@@ -52,7 +59,7 @@ extension BreedSearchEnvironment {
     return await HttpClient.getRequest(endpoint: .image(id: id))
       .mapError { .fetchImageFailed($0)}
       .map { (image: CatImageResponse) -> ImageSource in
-        return .remote(image.url)
+        return .remote(id, image.url)
       }
   }
 
@@ -83,6 +90,13 @@ extension BreedSearchEnvironment {
     }
   }
 
+  private static func fetchRemoteImageDataImplementation(
+    from url: String
+  ) async -> Result<Data, BreedSearchFeature.BreedSearchError> {
+    return await HttpClient.getDataRequest(from: url)
+      .mapError { .fetchBreedsFailed($0) }
+  }
+
 }
 
 // MARK: Preview Implementation
@@ -101,6 +115,12 @@ extension BreedSearchEnvironment {
       )
   } storeBreedsLocally: { _ in
     return .success
+  } storeImageLocally: { _, _ in
+    return
+  } loadLocalImage: { _ in
+    return UIImage(resource: .breed).pngData()
+  } fetchRemoteImageData: { _ in
+    return .success(UIImage(resource: .breed).pngData()!)
   }
 
   private static func generateMockBreeds(page: Int, limit: Int) -> [CatBreedResponse] {

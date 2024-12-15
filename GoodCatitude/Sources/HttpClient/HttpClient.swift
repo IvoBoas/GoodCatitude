@@ -66,4 +66,23 @@ final class HttpClient {
     )
   }
 
+  static func getDataRequest(
+    from url: String
+  ) async -> HttpRequestResult<Data> {
+    return await withCheckedContinuation { continuation in
+      AF.request(
+        url,
+        method: .get
+      )
+      .responseData { response in
+        switch response.result {
+        case .success(let data):
+          continuation.resume(returning: .success(data))
+        case .failure(let error):
+          continuation.resume(returning: .error(.from(error)))
+        }
+      }
+    }
+  }
+
 }

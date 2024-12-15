@@ -77,7 +77,8 @@ struct CatBreedEntryView: View {
 
   var body: some View {
     VStack(alignment: .center, spacing: 4) {
-      makeImageView(source: breed.image)
+      CatBreedEntryImage(source: breed.image)
+        .equatable()
         .frame(maxHeight: .infinity, alignment: .top)
 
       Text(breed.name)
@@ -87,8 +88,13 @@ struct CatBreedEntryView: View {
     }
   }
 
-  @MainActor @ViewBuilder
-  func makeImageView(source: ImageSource) -> some View {
+}
+
+struct CatBreedEntryImage: View, Equatable {
+
+  let source: ImageSource
+
+  var body: some View {
     switch source {
     case .loading:
       makeProgressView()
@@ -96,16 +102,22 @@ struct CatBreedEntryView: View {
     case .assets(let name):
       Image(name)
         .resizable()
-        .scaledToFit()
+        .scaledToFill()
+        .frame(width: 100, height: 100)
+        .clipped()
         .clipShape(RoundedRectangle(cornerRadius: 8))
 
-    case .data(let data):
-      Image(uiImage: UIImage(data: data) ?? UIImage())
-        .resizable()
-        .scaledToFit()
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+    case .local(_, let data):
+      if let image = UIImage(data: data) {
+        Image(uiImage: image)
+          .resizable()
+          .scaledToFill()
+          .frame(width: 100, height: 100)
+          .clipped()
+          .clipShape(RoundedRectangle(cornerRadius: 8))
+      }
 
-    case .remote(let url):
+    case .remote(_, let url):
       KFImage(URL(string: url))
         .placeholder { makeProgressView() }
         .loadDiskFileSynchronously()

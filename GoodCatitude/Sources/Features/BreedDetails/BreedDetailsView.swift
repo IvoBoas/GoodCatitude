@@ -75,7 +75,6 @@ struct BreedDetailsView: View {
             }
             .padding(horizontal: 24)
           }
-          .scrollIndicators(.hidden)
 
           if let description = viewStore.description {
             VStack(alignment: .leading, spacing: 8) {
@@ -98,6 +97,7 @@ struct BreedDetailsView: View {
         .offset(y: -40)
       }
     }
+    .scrollIndicators(.hidden)
     .toolbar(.hidden, for: .tabBar)
     .toolbarBackground(.hidden, for: .navigationBar)
     .ignoresSafeArea()
@@ -112,16 +112,18 @@ struct BreedDetailsView: View {
     case .assets(let name):
       Image(name)
         .resizable()
-        .scaledToFit()
+        .scaledToFill()
+        .clipped()
         .clipShape(RoundedRectangle(cornerRadius: 8))
 
-    case .data(let data):
+    case .local(_, let data):
       Image(uiImage: UIImage(data: data) ?? UIImage())
         .resizable()
-        .scaledToFit()
+        .scaledToFill()
+        .clipped()
         .clipShape(RoundedRectangle(cornerRadius: 8))
 
-    case .remote(let url):
+    case .remote(_, let url):
       KFImage(URL(string: url))
         .placeholder { makeProgressView() }
         .loadDiskFileSynchronously()

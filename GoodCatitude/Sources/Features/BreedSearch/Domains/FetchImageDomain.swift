@@ -11,13 +11,19 @@ import ComposableArchitecture
 @Reducer
 struct FetchImageDomain {
 
+  private let imageWriteQueue = DispatchQueue(label: "com.app.imageWriteQueue", qos: .background)
+
   struct State: Equatable {
 
   }
 
   enum Action: Equatable {
     case fetchImage(_ breedId: String, _ imageId: String)
+    case fetchRemoteImage(_ breedId: String, _ imageId: String)
     case handleImage(_ breedId: String, Result<ImageSource, BreedSearchFeature.BreedSearchError>)
+    case handleImageData(_ breedId: String, _ imageId: String, Result<Data, BreedSearchFeature.BreedSearchError>)
+    case storeImageLocally(_ imageId: String, Data)
+    case fetchRemoteImageData(_ breedId: String, _ imageId: String, _ url: String)
 
     case updateImage(_ breedId: String, ImageSource)
     case hadFailure(FailureType)
@@ -31,8 +37,20 @@ struct FetchImageDomain {
       case .fetchImage(let breedId, let imageId):
         return fetchImage(&state, breedId: breedId, imageId: imageId)
 
+      case .fetchRemoteImage(let breedId, let imageId):
+        return fetchRemoteImage(&state, breedId: breedId, imageId: imageId)
+
       case .handleImage(let breedId, let result):
         return handleImage(&state, breedId: breedId, result: result)
+
+      case .handleImageData(let breedId, let imageId, let result):
+        return handleImageData(&state, breedId: breedId, imageId: imageId, result: result)
+
+      case .storeImageLocally(let imageId, let data):
+        return storeImageLocally(&state, imageId: imageId, data: data)
+
+      case .fetchRemoteImageData(let breedId, let imageId, let url):
+        return fetchRemoteImageData(&state, url: url, breedId: breedId, imageId: imageId)
 
       case .updateImage, .hadFailure:
         return .none
@@ -45,6 +63,36 @@ struct FetchImageDomain {
 extension FetchImageDomain {
 
   private func fetchImage(
+    _ state: inout State,
+    breedId: String,
+    imageId: String
+  ) -> Effect<Action> {
+    return .run(priority: .background) { send in
+      let localImage = environment.loadLocalImage(imageId)
+
+      if let localImage {
+        await send(.handleImage(breedId, .success(.local(imageId, localImage))))
+      } else {
+        await send(.fetchRemoteImage(breedId, imageId))
+      }
+    }
+
+    /*
+     let localImage = environment.loadLocalImage(imageId)
+
+    if let localImage {
+      return .send(
+        .handleImage(breedId, .success(.local(imageId, localImage)))
+      )
+    } else {
+      return .send(
+        .fetchRemoteImage(breedId, imageId)
+      )
+    }
+     */
+  }
+
+  private func fetchRemoteImage(
     _ state: inout State,
     breedId: String,
     imageId: String
@@ -63,14 +111,67 @@ extension FetchImageDomain {
   ) -> Effect<Action> {
     switch result {
     case .success(let source):
-      return .send(.updateImage(breedId, source))
+      switch source {
+      case .loading, .assets, .local:
+        return .send(.updateImage(breedId, source))
+
+      case .remote(let imageId, let url):
+        return .send(.fetchRemoteImageData(breedId, imageId, url))
+      }
 
     case .failure(let error):
-      print("[FetchImageDomain] Failed to fetch image: \(error)")
+      print("[FetchImageDomain] Failed to fetch image info: \(error)")
 
       let failure = BreedSearchFailureMessageHelper.makeFailure(for: error)
 
       return .send(.hadFailure(failure))
+    }
+  }
+
+  private func handleImageData(
+    _ state: inout State,
+    breedId: String,
+    imageId: String,
+    result: Result<Data, BreedSearchFeature.BreedSearchError>
+  ) -> Effect<Action> {
+    switch result {
+    case .success(let data):
+      return .merge(
+        .send(.handleImage(breedId, .success(.local(imageId, data)))),
+        .send(.storeImageLocally(imageId, data))
+      )
+
+    case .failure(let error):
+      print("[FetchImageDomain] Failed to fetch image data: \(error)")
+
+      let failure = BreedSearchFailureMessageHelper.makeFailure(for: error)
+
+      return .send(.hadFailure(failure))
+    }
+  }
+
+  private func storeImageLocally(
+    _ state: inout State,
+    imageId: String,
+    data: Data
+  ) -> Effect<Action> {
+    imageWriteQueue.async {
+      environment.storeImageLocally(data, imageId)
+    }
+
+    return .none
+  }
+
+  private func fetchRemoteImageData(
+    _ state: inout State,
+    url: String,
+    breedId: String,
+    imageId: String
+  ) -> Effect<Action> {
+    return .run { send in
+      let result = await environment.fetchRemoteImageData(url)
+
+      await send(.handleImageData(breedId, imageId, result))
     }
   }
 
