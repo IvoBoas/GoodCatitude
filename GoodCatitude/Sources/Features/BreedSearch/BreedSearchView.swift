@@ -34,11 +34,13 @@ struct BreedSearchView: View {
         ScrollView {
           LazyVGrid(columns: gridColumns, spacing: 16) {
             ForEach(viewStore.breeds, id: \.id) { breed in
-              CatBreedEntryView(breed: breed)
-                .frame(maxHeight: .infinity, alignment: .top)
-                .onAppear {
-                  viewStore.send(.fetchNextPageIfLast(id: breed.id))
-                }
+              Button { viewStore.send(.selectBreed(breed)) } label: {
+                CatBreedEntryView(breed: breed)
+                  .frame(maxHeight: .infinity, alignment: .top)
+                  .onAppear {
+                    viewStore.send(.fetchNextPageIfLast(id: breed.id))
+                  }
+              }
             }
           }
           .padding(

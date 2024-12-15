@@ -24,6 +24,8 @@ struct BreedSearchFeature {
     var searchBreedsState = SearchBreedsDomain.State()
     var localStorageState = LocalStorageDomain.State()
 
+    var breedDetailsState: BreedDetailsFeature.State?
+
     var isLoading: Bool {
       fetchBreedsState.isLoading || searchBreedsState.isLoading
     }
@@ -39,6 +41,10 @@ struct BreedSearchFeature {
     case fetchImageDomain(FetchImageDomain.Action)
     case searchBreedsDomain(SearchBreedsDomain.Action)
     case localStorageDomain(LocalStorageDomain.Action)
+
+    case selectBreed(CatBreed)
+    case breedDetailsAction(BreedDetailsFeature.Action)
+    case dismissDetails
   }
 
   enum BreedSearchError: Error, Equatable {
@@ -89,7 +95,22 @@ struct BreedSearchFeature {
 
       case .localStorageDomain(let action):
         return handleLocalStorageDomainAction(&state, action: action)
+
+      case .selectBreed(let breed):
+        state.breedDetailsState = BreedDetailsFeature.State(breed: breed)
+
+        return .none
+
+      case .breedDetailsAction:
+        return .none
+
+      case .dismissDetails:
+        // TODO: Implement
+        return .none
       }
+    }
+    ifLet(\.breedDetailsState, action: \.breedDetailsAction) {
+      BreedDetailsFeature()
     }
   }
 
