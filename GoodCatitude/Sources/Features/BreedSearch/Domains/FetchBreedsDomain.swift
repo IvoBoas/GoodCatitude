@@ -16,6 +16,7 @@ struct FetchBreedsDomain {
     var currentPage: Int = 0
     var hasMorePages = true
     var isLoading = false
+    var fetchingLocal = false
 
     var canLoadNextPage: Bool {
       return hasMorePages && !isLoading
@@ -26,6 +27,7 @@ struct FetchBreedsDomain {
     case resetPagination
     case fetchNextPage
     case handleBreedsResponse(Result<[CatBreed], BreedSearchFeature.BreedSearchError>)
+    case handleLocalBreeds([CatBreed])
 
     case fetchedBreeds([CatBreed])
     case hadFailure(FailureType)
@@ -45,6 +47,9 @@ struct FetchBreedsDomain {
       case .handleBreedsResponse(let breeds):
         return handleBreedsResponse(&state, result: breeds)
 
+      case .handleLocalBreeds(let breeds):
+        return handleLocalBreeds(&state, breeds: breeds)
+
       case .fetchedBreeds, .hadFailure:
         return .none
       }
@@ -61,6 +66,7 @@ extension FetchBreedsDomain {
     state.currentPage = 0
     state.hasMorePages = true
     state.isLoading = false
+    state.fetchingLocal = false
 
     return .none
   }
@@ -74,10 +80,18 @@ extension FetchBreedsDomain {
 
     state.isLoading = true
 
-    return .run { [page = state.currentPage, limit = state.pageLimit] send in
-      let result = await environment.fetchBreeds(page, limit)
+    if state.fetchingLocal {
+      return .run { [page = state.currentPage, limit = state.pageLimit] send in
+        let result = await environment.fetchBreeds(page, limit)
 
-      await send(.handleBreedsResponse(result))
+        await send(.handleBreedsResponse(result))
+      }
+    } else {
+      return .run { [page = state.currentPage, limit = state.pageLimit] send in
+        let breeds = await environment.fetchLocalBreeds(page, limit)
+
+        await send(.handleLocalBreeds(breeds))
+      }
     }
   }
 
@@ -100,12 +114,34 @@ extension FetchBreedsDomain {
       return .send(.fetchedBreeds(breeds))
 
     case .failure(let error):
+      state.fetchingLocal = true
+
       print("[FetchBreedsDomain] Failed to fetch breeds: \(error)")
 
       let failure = BreedSearchFailureMessageHelper.makeFailure(for: error)
 
-      return .send(.hadFailure(failure))
+      return .merge(
+        .send(.hadFailure(failure)),
+        .send(.fetchNextPage)
+      )
     }
+  }
+
+  private func handleLocalBreeds(
+    _ state: inout State,
+    breeds: [CatBreed]
+  ) -> Effect<Action> {
+    state.isLoading = false
+
+    guard !breeds.isEmpty else {
+      state.hasMorePages = false
+
+      return .none
+    }
+
+    state.currentPage += 1
+
+    return .send(.fetchedBreeds(breeds))
   }
 
 }

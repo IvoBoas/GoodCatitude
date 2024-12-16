@@ -50,6 +50,7 @@ struct BreedSearchView: View {
           }
         }
         .scrollIndicators(.hidden)
+        .refreshable { viewStore.send(.reload) }
       }
       .onAppear {
         viewStore.send(.onAppear)

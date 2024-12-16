@@ -29,6 +29,7 @@ struct BreedSearchFeature {
   
   enum Action: Equatable {
     case onAppear
+    case reload
     case fetchNextPageIfLast(id: String)
     case updateSearchQueryDebounced(String)
     case handleSearchQuery
@@ -73,6 +74,14 @@ struct BreedSearchFeature {
         }
 
         return .none
+
+      case .reload:
+        state.breeds = []
+
+        return .merge(
+          .send(.fetchBreedsDomain(.resetPagination)),
+          .send(.fetchBreedsDomain(.fetchNextPage))
+        )
 
       case .fetchNextPageIfLast(let id):
         return fetchNextPageIfLast(&state, id: id)
@@ -151,7 +160,7 @@ extension BreedSearchFeature {
     action: FetchBreedsDomain.Action
   ) -> Effect<Action> {
     switch action {
-    case .resetPagination, .handleBreedsResponse:
+    case .resetPagination, .handleBreedsResponse, .handleLocalBreeds:
       return .none
       
     case .fetchNextPage:
@@ -209,12 +218,12 @@ extension BreedSearchFeature {
     action: SearchBreedsDomain.Action
   ) -> Effect<Action> {
     switch action {
-    case .searchBreed:
+    case .searchBreed, .searchBreedLocal:
       state.failure = nil
       
       return .none
       
-    case .handleBreedsSearchResponse:
+    case .handleBreedsSearchResponse, .handleLocalBreedsSearch:
       return .none
       
     case .updateBreeds(let breeds):

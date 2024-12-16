@@ -12,7 +12,9 @@ import ComposableArchitecture
 struct BreedSearchEnvironment {
 
   var fetchBreeds: (_ page: Int, _ limit: Int) async -> Result<[CatBreed], BreedSearchFeature.BreedSearchError>
+  var fetchLocalBreeds: (_ page: Int, _ limit: Int) async -> [CatBreed]
   var searchBreeds: (_ query: String) async -> Result<[CatBreed], BreedSearchFeature.BreedSearchError>
+  var searchBreedsLocally: (_ query: String) async -> [CatBreed]
   var storeBreedsLocally: (_ breeds: [CatBreed]) async -> EmptyResult<CrudError>
   var updateBreedIsFavorite: (_ id: String, _ value: Bool) async -> EmptyResult<CrudError>
 
@@ -23,7 +25,9 @@ extension BreedSearchEnvironment {
 
   static let live = Self(
     fetchBreeds: fetchBreedsImplementation,
+    fetchLocalBreeds: fetchLocalBreedsImplementation,
     searchBreeds: searchBreedsImplementation,
+    searchBreedsLocally: searchBreedsLocallyImplementation,
     storeBreedsLocally: storeBreedsLocallyImplementation,
     updateBreedIsFavorite: updateBreedIsFavoriteImplementation
   )
@@ -45,6 +49,34 @@ extension BreedSearchEnvironment {
     }
   }
 
+  private static func fetchLocalBreedsImplementation(
+    page: Int,
+    limit: Int
+  ) -> [CatBreed] {
+    @Dependency(\.catBreedCrud) var crud
+    @Dependency(\.persistentContainer) var container
+
+    let context = container.viewContext
+
+    return context.performAndWait {
+      return crud.getCatBreedPage(page, limit: limit, moc: context)
+        .compactMap { entity in
+          CatBreed(
+            id: entity.id,
+            name: entity.name,
+            countryCode: entity.countryCode,
+            origin: entity.origin,
+            description: entity.breedDescription,
+            lifespan: entity.lifespan,
+            temperament: entity.temperament,
+            isFavourite: entity.isFavourite,
+            referenceImageId: entity.imageId,
+            image: .loading
+          )
+        }
+    }
+  }
+
   private static func searchBreedsImplementation(
     query: String
   ) async -> Result<[CatBreed], BreedSearchFeature.BreedSearchError> {
@@ -58,6 +90,33 @@ extension BreedSearchEnvironment {
 
     case .error(let error):
       return .failure(.fetchBreedsFailed(error))
+    }
+  }
+
+  private static func searchBreedsLocallyImplementation(
+    query: String
+  ) async -> [CatBreed] {
+    @Dependency(\.catBreedCrud) var crud
+    @Dependency(\.persistentContainer) var container
+
+    let context = container.viewContext
+
+    return context.performAndWait {
+      return crud.searchCatBreed(query: query, moc: context)
+        .compactMap { entity in
+          CatBreed(
+            id: entity.id,
+            name: entity.name,
+            countryCode: entity.countryCode,
+            origin: entity.origin,
+            description: entity.breedDescription,
+            lifespan: entity.lifespan,
+            temperament: entity.temperament,
+            isFavourite: entity.isFavourite,
+            referenceImageId: entity.imageId,
+            image: .loading
+          )
+        }
     }
   }
 
@@ -134,11 +193,16 @@ extension BreedSearchEnvironment {
 
   static let preview = Self {
     return .success(generateMockBreeds(page: $0, limit: $1))
+  } fetchLocalBreeds: {
+    return generateMockBreeds(page: $0, limit: $1)
   } searchBreeds: { query in
     return .success(
       generateMockBreeds(page: 0, limit: 10)
         .filter { $0.name.lowercased().contains(query.lowercased()) }
     )
+  } searchBreedsLocally: { query in
+    return generateMockBreeds(page: 0, limit: 10)
+      .filter { $0.name.lowercased().contains(query.lowercased()) }
   } storeBreedsLocally: { _ in
     return .success
   } updateBreedIsFavorite: { _, _ in

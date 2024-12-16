@@ -16,7 +16,7 @@ extension DependencyValues {
     set { self[PersistentContainerKeys.self] = newValue }
   }
 
-  var catBreedCrud: CatBreedCrudType {
+  var catBreedCrud: CatBreedCrud {
     get { self[CatBreedCrudKey.self] }
     set { self[CatBreedCrudKey.self] = newValue }
   }
@@ -45,9 +45,9 @@ private enum PersistentContainerKeys: DependencyKey {
 }
 
 private enum CatBreedCrudKey: DependencyKey {
-  static let liveValue: CatBreedCrudType = CatBreedCrud()
-  static let previewValue: CatBreedCrudType = CatBreedCrud()
-  static let testValue: CatBreedCrudType = CatBreedCrud()
+  static let liveValue = CatBreedCrud()
+  static let previewValue = CatBreedCrud()
+  static let testValue = CatBreedCrud()
 }
 
 private enum BreedSearchEnvironmentKey: DependencyKey {

@@ -41,9 +41,7 @@ struct FavouriteBreedsView: View {
         }
       }
       .scrollIndicators(.hidden)
-      .onAppear {
-        viewStore.send(.onAppear)
-      }
+      .onAppear { viewStore.send(.onAppear) }
     }
   }
 

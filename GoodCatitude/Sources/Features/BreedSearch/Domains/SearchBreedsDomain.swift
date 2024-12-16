@@ -17,7 +17,9 @@ struct SearchBreedsDomain {
 
   enum Action: Equatable {
     case searchBreed(String)
-    case handleBreedsSearchResponse(Result<[CatBreed], BreedSearchFeature.BreedSearchError>)
+    case searchBreedLocal(String)
+    case handleBreedsSearchResponse(_ query: String, Result<[CatBreed], BreedSearchFeature.BreedSearchError>)
+    case handleLocalBreedsSearch([CatBreed])
 
     case updateBreeds([CatBreed])
     case hadFailure(FailureType)
@@ -31,8 +33,14 @@ struct SearchBreedsDomain {
       case .searchBreed(let query):
         return searchBreed(&state, query: query)
 
-      case .handleBreedsSearchResponse(let result):
-        return handleBreedsSearchResponse(&state, result: result)
+      case .searchBreedLocal(let query):
+        return searchBreedLocal(&state, query: query)
+
+      case .handleBreedsSearchResponse(let query, let result):
+        return handleBreedsSearchResponse(&state, query: query, result: result)
+
+      case .handleLocalBreedsSearch(let breeds):
+        return handleLocalBreedsSearchResponse(&state, breeds: breeds)
 
       case .updateBreeds, .hadFailure:
         return .none
@@ -53,12 +61,26 @@ extension SearchBreedsDomain {
     return .run { send in
       let result = await environment.searchBreeds(query)
 
-      await send(.handleBreedsSearchResponse(result))
+      await send(.handleBreedsSearchResponse(query, result))
+    }
+  }
+
+  private func searchBreedLocal(
+    _ state: inout State,
+    query: String
+  ) -> Effect<Action> {
+    state.isLoading = true
+
+    return .run { send in
+      let breeds = await environment.searchBreedsLocally(query)
+
+      await send(.handleLocalBreedsSearch(breeds))
     }
   }
 
   private func handleBreedsSearchResponse(
     _ state: inout State,
+    query: String,
     result: Result<[CatBreed], BreedSearchFeature.BreedSearchError>
   ) -> Effect<Action> {
     state.isLoading = false
@@ -72,8 +94,20 @@ extension SearchBreedsDomain {
 
       let failure = BreedSearchFailureMessageHelper.makeFailure(for: error)
 
-      return .send(.hadFailure(failure))
+      return .merge(
+        .send(.hadFailure(failure)),
+        .send(.searchBreedLocal(query))
+      )
     }
+  }
+
+  private func handleLocalBreedsSearchResponse(
+    _ state: inout State,
+    breeds: [CatBreed]
+  ) -> Effect<Action> {
+    state.isLoading = false
+
+    return .send(.updateBreeds(breeds))
   }
 
 }
