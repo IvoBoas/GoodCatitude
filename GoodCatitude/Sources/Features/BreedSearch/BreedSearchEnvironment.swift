@@ -13,11 +13,7 @@ struct BreedSearchEnvironment {
 
   var fetchBreeds: (_ page: Int, _ limit: Int) async -> Result<[CatBreed], BreedSearchFeature.BreedSearchError>
   var searchBreeds: (_ query: String) async -> Result<[CatBreed], BreedSearchFeature.BreedSearchError>
-  var fetchImage: (_ id: String) async -> Result<ImageSource, BreedSearchFeature.BreedSearchError>
   var storeBreedsLocally: (_ breeds: [CatBreed]) async -> EmptyResult<CrudError>
-  var storeImageLocally: (_ data: Data, _ filename: String) -> Void
-  var loadLocalImage: (_ filename: String) -> Data?
-  var fetchRemoteImageData: (_ url: String) async -> Result<Data, BreedSearchFeature.BreedSearchError>
   var updateBreedIsFavorite: (_ id: String, _ value: Bool) async -> EmptyResult<CrudError>
 
 }
@@ -28,11 +24,7 @@ extension BreedSearchEnvironment {
   static let live = Self(
     fetchBreeds: fetchBreedsImplementation,
     searchBreeds: searchBreedsImplementation,
-    fetchImage: fetchImageImplementation,
     storeBreedsLocally: storeBreedsLocallyImplementation,
-    storeImageLocally: ImageStorageManager.saveImage,
-    loadLocalImage: ImageStorageManager.loadImage,
-    fetchRemoteImageData: fetchRemoteImageDataImplementation,
     updateBreedIsFavorite: updateBreedIsFavoriteImplementation
   )
 
@@ -69,16 +61,6 @@ extension BreedSearchEnvironment {
     }
   }
 
-  private static func fetchImageImplementation(
-    id: String
-  ) async -> Result<ImageSource, BreedSearchFeature.BreedSearchError> {
-    return await HttpClient.getRequest(endpoint: .image(id: id))
-      .mapError { .fetchImageFailed($0)}
-      .map { (image: CatImageResponse) -> ImageSource in
-        return .remote(id, image.url)
-      }
-  }
-
   private static func storeBreedsLocallyImplementation(
     breeds: [CatBreed]
   ) -> EmptyResult<CrudError> {
@@ -104,13 +86,6 @@ extension BreedSearchEnvironment {
 
       return context.saveIfNeeded()
     }
-  }
-
-  private static func fetchRemoteImageDataImplementation(
-    from url: String
-  ) async -> Result<Data, BreedSearchFeature.BreedSearchError> {
-    return await HttpClient.getDataRequest(from: url)
-      .mapError { .fetchBreedsFailed($0) }
   }
 
   private static func updateBreedIsFavoriteImplementation(
@@ -164,18 +139,8 @@ extension BreedSearchEnvironment {
       generateMockBreeds(page: 0, limit: 10)
         .filter { $0.name.lowercased().contains(query.lowercased()) }
     )
-  } fetchImage: { _ in
-      .success(
-        .assets(.breed)
-      )
   } storeBreedsLocally: { _ in
     return .success
-  } storeImageLocally: { _, _ in
-    return
-  } loadLocalImage: { _ in
-    return UIImage(resource: .breed).pngData()
-  } fetchRemoteImageData: { _ in
-    return .success(UIImage(resource: .breed).pngData()!)
   } updateBreedIsFavorite: { _, _ in
     return .success
   }

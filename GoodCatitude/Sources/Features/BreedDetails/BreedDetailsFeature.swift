@@ -19,6 +19,7 @@ struct BreedDetailsFeature {
   enum Action: Equatable { 
     case toggleIsFavorite
     case updateEntity
+    case propagateChanges
     case handleStorageResult(EmptyResult<CrudError>)
     case hadFailure(FailureType)
   }
@@ -43,7 +44,7 @@ struct BreedDetailsFeature {
       case .handleStorageResult(let result):
         return handleStorageResult(&state, result: result)
 
-      case .hadFailure:
+      case .hadFailure, .propagateChanges:
         return .none
       }
     }
@@ -59,7 +60,7 @@ extension BreedDetailsFeature {
   ) -> Effect<Action> {
     switch result {
     case .success:
-      return .none
+      return .send(.propagateChanges)
 
     case .error(let error):
       print("[LocalStorageDomain] Failed to store breeds: \(error)")

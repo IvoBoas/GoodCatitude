@@ -11,24 +11,38 @@ import Kingfisher
 
 struct CatBreedEntryView: View {
 
+  @Environment(\.colorScheme) var scheme
+
   let breed: CatBreed
 
   var body: some View {
-    VStack(alignment: .center, spacing: 4) {
-      CatBreedEntryImage(source: breed.image)
-        .equatable()
-        .frame(maxHeight: .infinity, alignment: .top)
+    CatBreedEntryImage(source: breed.image)
+      .scaledToFill()
+      .frame(width: 100)
+      .clipped()
+      .overlay {
+        ZStack(alignment: .bottomLeading) {
+          LinearGradient(
+            gradient: Gradient(colors: [.clear, .black.opacity(0.8)]),
+            startPoint: .center,
+            endPoint: .bottom
+          )
 
-      Text(breed.name)
-        .font(.footnote)
-        .lineLimit(2)
-        .multilineTextAlignment(.leading)
-    }
+          Text(breed.name)
+            .font(.caption2.bold())
+            .lineLimit(2)
+            .multilineTextAlignment(.leading)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 4)
+            .padding(.bottom, 8)
+        }
+      }
+      .clipShape(RoundedRectangle(cornerRadius: 8))
   }
 
 }
 
-struct CatBreedEntryImage: View, Equatable {
+struct CatBreedEntryImage: View {
 
   let source: ImageSource
 
@@ -40,31 +54,18 @@ struct CatBreedEntryImage: View, Equatable {
     case .assets(let name):
       Image(name)
         .resizable()
-        .scaledToFill()
-        .frame(width: 100, height: 100)
-        .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: 8))
 
     case .local(_, let data):
       if let image = UIImage(data: data) {
         Image(uiImage: image)
           .resizable()
-          .scaledToFill()
-          .frame(width: 100, height: 100)
-          .clipped()
-          .clipShape(RoundedRectangle(cornerRadius: 8))
       }
 
     case .remote(_, let url):
       KFImage(URL(string: url))
         .placeholder { makeProgressView() }
-        .loadDiskFileSynchronously()
         .cacheOriginalImage()
         .resizable()
-        .scaledToFill()
-        .frame(width: 100, height: 100)
-        .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
   }
 

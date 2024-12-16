@@ -16,7 +16,7 @@ struct FavouriteBreedsFeature {
     var breeds: [CatBreed] = []
     var isLoading = false
 
-    var fetchImageState = FetchImageDomain.State()
+    var fetchImageState = FetchImageFeature.State()
   }
 
   enum Action: Equatable {
@@ -24,7 +24,7 @@ struct FavouriteBreedsFeature {
     case reloadFavourites
     case handleFavourites([CatBreed])
 
-    case fetchImageDomain(FetchImageDomain.Action)
+    case fetchImageDomain(FetchImageFeature.Action)
   }
 
   @Dependency(\.favouriteBreedsEnvironment) var environment
@@ -32,7 +32,7 @@ struct FavouriteBreedsFeature {
   var body: some ReducerOf<Self> {
 
     Scope(state: \.fetchImageState, action: \.fetchImageDomain) {
-      FetchImageDomain()
+      FetchImageFeature()
     }
 
     Reduce { state, action in
@@ -73,7 +73,7 @@ extension FavouriteBreedsFeature {
 
   private func handleFetchImageDomainAction(
     _ state: inout State,
-    action: FetchImageDomain.Action
+    action: FetchImageFeature.Action
   ) -> Effect<Action> {
     switch action {
     case .fetchImage, .handleImage, .fetchRemoteImage,

@@ -12,7 +12,7 @@ struct BreedSearchView: View {
 
   @Bindable var store: StoreOf<BreedSearchFeature>
 
-  let gridColumns: [GridItem] = Array(
+  private let gridColumns: [GridItem] = Array(
     repeating: GridItem(.flexible(), spacing: 16),
     count: 3
   )
@@ -34,19 +34,7 @@ struct BreedSearchView: View {
           LazyVGrid(columns: gridColumns, spacing: 16) {
             ForEach(viewStore.breeds, id: \.id) { breed in
               NavigationLink(state: BreedDetailsFeature.State(breed: breed)) {
-                CatBreedEntryView(breed: breed)
-                  .frame(maxHeight: .infinity, alignment: .top)
-                  .overlay {
-                    if breed.isFavourite {
-                      Image(systemName: "heart.fill")
-                        .foregroundStyle(.red)
-                        .padding(4)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                    }
-                  }
-                  .onAppear {
-                    viewStore.send(.fetchNextPageIfLast(id: breed.id))
-                  }
+                BreedItemView(breed: breed, viewStore: viewStore)
               }
               .buttonStyle(.borderless)
             }
@@ -69,6 +57,34 @@ struct BreedSearchView: View {
     }
   }
 
+}
+
+private struct BreedItemView: View {
+
+  let breed: CatBreed
+  let viewStore: ViewStore<BreedSearchFeature.State, BreedSearchFeature.Action>
+
+  var body: some View {
+    NavigationLink(state: BreedDetailsFeature.State(breed: breed)) {
+      CatBreedEntryView(breed: breed)
+        .frame(maxHeight: .infinity, alignment: .top)
+        .overlay(favoriteOverlay)
+        .onAppear {
+          viewStore.send(.fetchNextPageIfLast(id: breed.id))
+        }
+    }
+    .buttonStyle(.borderless)
+  }
+
+  @ViewBuilder
+  private var favoriteOverlay: some View {
+    if breed.isFavourite {
+      Image(systemName: "heart.fill")
+        .foregroundStyle(.red)
+        .padding(4)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+    }
+  }
 }
 
 #Preview {

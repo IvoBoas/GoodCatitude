@@ -31,6 +31,11 @@ extension DependencyValues {
     set { self[FavouriteBreedsEnvironmentKey.self] = newValue }
   }
 
+  var fetchImageEnvironment: FetchImageEnvironment {
+    get { self[FetchImageEnvironmentKey.self] }
+    set { self[FetchImageEnvironmentKey.self] = newValue }
+  }
+
 }
 
 private enum PersistentContainerKeys: DependencyKey {
@@ -47,4 +52,8 @@ private enum BreedSearchEnvironmentKey: DependencyKey {
 
 private enum FavouriteBreedsEnvironmentKey: DependencyKey {
   static let liveValue = FavouriteBreedsEnvironment.live
+}
+
+private enum FetchImageEnvironmentKey: DependencyKey {
+  static let liveValue = FetchImageEnvironment.live
 }

@@ -21,7 +21,7 @@ struct BreedSearchFeature {
     var failure: FailureType?
     
     var fetchBreedsState = FetchBreedsDomain.State()
-    var fetchImageState = FetchImageDomain.State()
+    var fetchImageState = FetchImageFeature.State()
     var searchBreedsState = SearchBreedsDomain.State()
     var localStorageState = LocalStorageDomain.State()
     
@@ -38,7 +38,7 @@ struct BreedSearchFeature {
     case handleSearchQuery
     
     case fetchBreedsDomain(FetchBreedsDomain.Action)
-    case fetchImageDomain(FetchImageDomain.Action)
+    case fetchImageDomain(FetchImageFeature.Action)
     case searchBreedsDomain(SearchBreedsDomain.Action)
     case localStorageDomain(LocalStorageDomain.Action)
   }
@@ -58,7 +58,7 @@ struct BreedSearchFeature {
     }
     
     Scope(state: \.fetchImageState, action: \.fetchImageDomain) {
-      FetchImageDomain()
+      FetchImageFeature()
     }
     
     Scope(state: \.searchBreedsState, action: \.searchBreedsDomain) {
@@ -186,7 +186,7 @@ extension BreedSearchFeature {
   // MARK: FetchImageDomain Action Handlers
   private func handleFetchImageDomainAction(
     _ state: inout State,
-    action: FetchImageDomain.Action
+    action: FetchImageFeature.Action
   ) -> Effect<Action> {
     switch action {
     case .fetchImage, .handleImage, .fetchRemoteImage,

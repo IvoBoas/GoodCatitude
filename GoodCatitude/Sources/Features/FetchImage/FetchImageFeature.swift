@@ -1,15 +1,15 @@
 //
-//  FetchImageDomain.swift
+//  FetchImageFeature.swift
 //  GoodCatitude
 //
-//  Created by Ivo Vilas Boas  on 15/12/2024.
+//  Created by Ivo Vilas Boas  on 16/12/2024.
 //
 
 import Foundation
 import ComposableArchitecture
 
 @Reducer
-struct FetchImageDomain {
+struct FetchImageFeature {
 
   private let imageWriteQueue = DispatchQueue(label: "com.app.imageWriteQueue", qos: .background)
 
@@ -29,7 +29,7 @@ struct FetchImageDomain {
     case hadFailure(FailureType)
   }
 
-  @Dependency(\.breedSearchEnvironment) var environment
+  @Dependency(\.fetchImageEnvironment) var environment
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
@@ -60,7 +60,7 @@ struct FetchImageDomain {
 
 }
 
-extension FetchImageDomain {
+extension FetchImageFeature {
 
   private func fetchImage(
     _ state: inout State,
@@ -76,20 +76,6 @@ extension FetchImageDomain {
         await send(.fetchRemoteImage(breedId, imageId))
       }
     }
-
-    /*
-     let localImage = environment.loadLocalImage(imageId)
-
-    if let localImage {
-      return .send(
-        .handleImage(breedId, .success(.local(imageId, localImage)))
-      )
-    } else {
-      return .send(
-        .fetchRemoteImage(breedId, imageId)
-      )
-    }
-     */
   }
 
   private func fetchRemoteImage(
@@ -98,7 +84,7 @@ extension FetchImageDomain {
     imageId: String
   ) -> Effect<Action> {
     return .run { send in
-      let result = await environment.fetchImage(imageId)
+      let result = await environment.fetchImageInfo(imageId)
 
       await send(.handleImage(breedId, result))
     }
@@ -176,5 +162,6 @@ extension FetchImageDomain {
   }
 
 }
+
 
 

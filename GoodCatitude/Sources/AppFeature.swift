@@ -50,7 +50,7 @@ struct AppFeature {
 
         return .none
 
-      case .path(.element(let id, .updateEntity)):
+      case .path(.element(let id, .propagateChanges)):
         return propagateFavouriteBreedAction(&state, pathId: id)
 
       case .searchAction, .detailsAction, .favouritesAction, .path:
@@ -75,8 +75,6 @@ extension AppFeature {
     }
 
     if let index = state.searchState.breeds.firstIndex(where: { $0.id == detailsState.breed.id }) {
-      print("Ivo -> propagating")
-
       let value = detailsState.breed.isFavourite
 
       state.searchState.breeds[index].isFavourite = value
