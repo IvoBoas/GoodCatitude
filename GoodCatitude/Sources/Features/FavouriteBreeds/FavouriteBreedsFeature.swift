@@ -30,7 +30,6 @@ struct FavouriteBreedsFeature {
   @Dependency(\.favouriteBreedsEnvironment) var environment
 
   var body: some ReducerOf<Self> {
-
     Scope(state: \.fetchImageState, action: \.fetchImageDomain) {
       FetchImageFeature()
     }

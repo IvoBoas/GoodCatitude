@@ -40,20 +40,30 @@ extension DependencyValues {
 
 private enum PersistentContainerKeys: DependencyKey {
   static let liveValue = PersistenceController.shared.container
+  static let previewValue = PersistenceController.preview.container
+  static let testValue = PersistenceController(inMemory: true).container
 }
 
 private enum CatBreedCrudKey: DependencyKey {
   static let liveValue: CatBreedCrudType = CatBreedCrud()
+  static let previewValue: CatBreedCrudType = CatBreedCrud()
+  static let testValue: CatBreedCrudType = CatBreedCrud()
 }
 
 private enum BreedSearchEnvironmentKey: DependencyKey {
   static let liveValue = BreedSearchEnvironment.live
+  static let previewValue = BreedSearchEnvironment.preview
+  static let testValue = BreedSearchEnvironment.preview
 }
 
 private enum FavouriteBreedsEnvironmentKey: DependencyKey {
   static let liveValue = FavouriteBreedsEnvironment.live
+  static let previewValue = FavouriteBreedsEnvironment.preview
+  static let testValue = FavouriteBreedsEnvironment.preview
 }
 
 private enum FetchImageEnvironmentKey: DependencyKey {
   static let liveValue = FetchImageEnvironment.live
+  static let previewValue = FetchImageEnvironment.preview
+  static let testValue = FetchImageEnvironment.preview
 }

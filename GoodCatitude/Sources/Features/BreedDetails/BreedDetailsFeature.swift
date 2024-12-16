@@ -39,7 +39,7 @@ struct BreedDetailsFeature {
           let result = await environment.updateBreedIsFavorite(id, value)
 
           await send(.handleStorageResult(result))
-        }
+        }.cancellable(id: "breedDetails.updateEntity", cancelInFlight: true)
 
       case .handleStorageResult(let result):
         return handleStorageResult(&state, result: result)

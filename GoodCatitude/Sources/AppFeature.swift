@@ -78,11 +78,9 @@ extension AppFeature {
       let value = detailsState.breed.isFavourite
 
       state.searchState.breeds[index].isFavourite = value
-
-      return .send(.favouritesAction(.reloadFavourites))
     }
 
-    return .none
+    return .send(.favouritesAction(.reloadFavourites))
   }
 
 }

@@ -50,6 +50,9 @@ struct BreedDetailsView: View {
 
             Button { viewStore.send(.toggleIsFavorite) } label: {
               Image(systemName: viewStore.isFavourite ? "heart.fill" : "heart")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 24, height: 24)
                 .foregroundStyle(.red)
             }
           }
