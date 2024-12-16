@@ -8,6 +8,7 @@
 import XCTest
 @testable import GoodCatitude
 
+/*
 final class GoodCatitudeTests: XCTestCase {
 
   override func setUpWithError() throws {
@@ -34,3 +35,4 @@ final class GoodCatitudeTests: XCTestCase {
   }
 
 }
+*/

@@ -8,14 +8,11 @@
 import Foundation
 import ComposableArchitecture
 
-// TODO: What happens if search is done before ending page fetching?
-// Cancel one task when another starts
 @Reducer
 struct BreedSearchFeature {
   
   @ObservableState
   struct State: Equatable {
-    
     var breeds: [CatBreed] = []
     var searchQuery: String = ""
     var failure: FailureType?
@@ -28,7 +25,6 @@ struct BreedSearchFeature {
     var isLoading: Bool {
       fetchBreedsState.isLoading || searchBreedsState.isLoading
     }
-    
   }
   
   enum Action: Equatable {

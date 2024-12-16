@@ -40,6 +40,12 @@
 		D7862B512D0FAC9B00B094D7 /* CatBreedEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7862B502D0FAC9B00B094D7 /* CatBreedEntryView.swift */; };
 		D7862B542D0FB16000B094D7 /* FetchImageFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7862B532D0FB16000B094D7 /* FetchImageFeature.swift */; };
 		D7862B562D0FB16C00B094D7 /* FetchImageEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7862B552D0FB16C00B094D7 /* FetchImageEnvironment.swift */; };
+		D7862B582D1022C600B094D7 /* FetchBreedsDomainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7862B572D1022C600B094D7 /* FetchBreedsDomainTests.swift */; };
+		D7862B5A2D1028FA00B094D7 /* SearchBreedsDomainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7862B592D1028FA00B094D7 /* SearchBreedsDomainTests.swift */; };
+		D7862B5C2D102B4300B094D7 /* LocalStorageDomainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7862B5B2D102B4300B094D7 /* LocalStorageDomainTests.swift */; };
+		D7862B5E2D102C8800B094D7 /* Tests+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7862B5D2D102C8800B094D7 /* Tests+Helpers.swift */; };
+		D7862B602D102C9400B094D7 /* Tests+Seeds.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7862B5F2D102C9400B094D7 /* Tests+Seeds.swift */; };
+		D7862B632D102E2900B094D7 /* FetchImageFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7862B622D102E2900B094D7 /* FetchImageFeatureTests.swift */; };
 		D79456662D0B609700D8C443 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = D79456652D0B609700D8C443 /* Alamofire */; };
 		D794566A2D0B60A000D8C443 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = D79456692D0B60A000D8C443 /* ComposableArchitecture */; };
 		D7B2EE5D2D0C5F0D002D45CE /* CatImageResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7B2EE5C2D0C5F0D002D45CE /* CatImageResponse.swift */; };
@@ -112,6 +118,12 @@
 		D7862B502D0FAC9B00B094D7 /* CatBreedEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatBreedEntryView.swift; sourceTree = "<group>"; };
 		D7862B532D0FB16000B094D7 /* FetchImageFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchImageFeature.swift; sourceTree = "<group>"; };
 		D7862B552D0FB16C00B094D7 /* FetchImageEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchImageEnvironment.swift; sourceTree = "<group>"; };
+		D7862B572D1022C600B094D7 /* FetchBreedsDomainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchBreedsDomainTests.swift; sourceTree = "<group>"; };
+		D7862B592D1028FA00B094D7 /* SearchBreedsDomainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBreedsDomainTests.swift; sourceTree = "<group>"; };
+		D7862B5B2D102B4300B094D7 /* LocalStorageDomainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStorageDomainTests.swift; sourceTree = "<group>"; };
+		D7862B5D2D102C8800B094D7 /* Tests+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Tests+Helpers.swift"; sourceTree = "<group>"; };
+		D7862B5F2D102C9400B094D7 /* Tests+Seeds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Tests+Seeds.swift"; sourceTree = "<group>"; };
+		D7862B622D102E2900B094D7 /* FetchImageFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchImageFeatureTests.swift; sourceTree = "<group>"; };
 		D7B2EE5C2D0C5F0D002D45CE /* CatImageResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatImageResponse.swift; sourceTree = "<group>"; };
 		D7B2EE5E2D0C62DB002D45CE /* CatImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatImage.swift; sourceTree = "<group>"; };
 		D7B62DBC2D0B618F00128C96 /* BreedSearchFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreedSearchFeature.swift; sourceTree = "<group>"; };
@@ -188,6 +200,8 @@
 		D73E47812D0AEFC800CF0181 /* GoodCatitudeTests */ = {
 			isa = PBXGroup;
 			children = (
+				D7862B5D2D102C8800B094D7 /* Tests+Helpers.swift */,
+				D7862B5F2D102C9400B094D7 /* Tests+Seeds.swift */,
 				D7B62DCE2D0B92B500128C96 /* Feature */,
 				D73E47822D0AEFC800CF0181 /* GoodCatitudeTests.swift */,
 			);
@@ -332,6 +346,14 @@
 			path = FetchImage;
 			sourceTree = "<group>";
 		};
+		D7862B612D102E1B00B094D7 /* FetchImage */ = {
+			isa = PBXGroup;
+			children = (
+				D7862B622D102E2900B094D7 /* FetchImageFeatureTests.swift */,
+			);
+			path = FetchImage;
+			sourceTree = "<group>";
+		};
 		D7B62DBB2D0B617E00128C96 /* BreedSearch */ = {
 			isa = PBXGroup;
 			children = (
@@ -378,6 +400,7 @@
 		D7B62DCE2D0B92B500128C96 /* Feature */ = {
 			isa = PBXGroup;
 			children = (
+				D7862B612D102E1B00B094D7 /* FetchImage */,
 				D7B62DCF2D0B92DD00128C96 /* BreedSearch */,
 			);
 			path = Feature;
@@ -386,6 +409,9 @@
 		D7B62DCF2D0B92DD00128C96 /* BreedSearch */ = {
 			isa = PBXGroup;
 			children = (
+				D7862B572D1022C600B094D7 /* FetchBreedsDomainTests.swift */,
+				D7862B592D1028FA00B094D7 /* SearchBreedsDomainTests.swift */,
+				D7862B5B2D102B4300B094D7 /* LocalStorageDomainTests.swift */,
 				D7B62DD02D0B92EE00128C96 /* BreedSearchFeatureTests.swift */,
 			);
 			path = BreedSearch;
@@ -600,7 +626,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				D73E47832D0AEFC800CF0181 /* GoodCatitudeTests.swift in Sources */,
+				D7862B5E2D102C8800B094D7 /* Tests+Helpers.swift in Sources */,
+				D7862B582D1022C600B094D7 /* FetchBreedsDomainTests.swift in Sources */,
+				D7862B632D102E2900B094D7 /* FetchImageFeatureTests.swift in Sources */,
+				D7862B5A2D1028FA00B094D7 /* SearchBreedsDomainTests.swift in Sources */,
 				D7B62DD12D0B92EE00128C96 /* BreedSearchFeatureTests.swift in Sources */,
+				D7862B602D102C9400B094D7 /* Tests+Seeds.swift in Sources */,
+				D7862B5C2D102B4300B094D7 /* LocalStorageDomainTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

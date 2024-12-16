@@ -11,104 +11,71 @@ import ComposableArchitecture
 
 final class BreedSearchFeatureTests: XCTestCase {
 
-  func testFetchNextPage_Success() async {
+  func testOnAppear_AlreadyHasData() async {
+    let (store, _) = await makeSUT(breeds: TestsSeeds.breedSeedsRemote)
+
+    await store.send(.onAppear)
+  }
+
+  func testOnAppear_WasSearching() async {
+    let (store, _) = await makeSUT(searchQuery: "some query")
+
+    await store.send(.onAppear)
+  }
+  
+  func testOnAppear_IsStarting() async {
     let (store, _) = await makeSUT()
 
-    await store.send(.fetchNextPage) { state in
-      state.isLoading = true
-      state.failure = nil
+    await store.send(.onAppear)
+    await store.receive(.fetchBreedsDomain(.fetchNextPage)) { state in
+      state.fetchBreedsState.isLoading = true
     }
-
-    await store.receive(\.handleBreedsResponse) { state in
-      state.isLoading = false
-      state.currentPage = 1
-      state.hasMorePages = true
-      state.breeds = BreedSearchFeatureTests.breedSeedsInitial
-    }
-
-    await store.receive(.fetchImage(breedId: "1", imageId: "1"))
-    await store.receive(.fetchImage(breedId: "2", imageId: "2"))
 
     await MainActor.run { store.exhaustivity = .off }
-
-    await store.receive(.handleImage(breedId: "1", .success(.remote("1"))))
-    await store.receive(.handleImage(breedId: "2", .success(.remote("2"))))
-
-    await store.assert { state in
-      state.breeds = BreedSearchFeatureTests.breedSeedsFinal
-    }
-  }
-
-  func testFetchNextPage_AlreadyLoading() async {
-    let (store, _) = await makeSUT(isLoading: true)
-
-    await store.send(.fetchNextPage)
-  }
-
-  func testFetchNextPage_NoMorePage() async {
-    let (store, _) = await makeSUT(hasMorePages: false)
-
-    await store.send(.fetchNextPage)
   }
 
   func testFetchNextPageIfLast_WithEmptyBreeds() async {
     let (store, _) = await makeSUT()
 
     await store.send(.fetchNextPageIfLast(id: "1"))
-    await store.receive(\.fetchNextPage) { state in
-      state.isLoading = true
-      state.failure = nil
-    }
-    await store.receive(\.handleBreedsResponse) { state in
-      state.isLoading = false
-      state.currentPage = 1
-      state.hasMorePages = true
-      state.breeds = BreedSearchFeatureTests.breedSeedsInitial
+    await store.receive(\.fetchBreedsDomain.fetchNextPage) { state in
+      state.fetchBreedsState.isLoading = true
     }
 
     await MainActor.run { store.exhaustivity = .off }
 
-    await store.receive(.handleImage(breedId: "1", .success(.remote("1"))))
-    await store.receive(.handleImage(breedId: "2", .success(.remote("2"))))
+    let breeds = TestsSeeds.breedSeedsLoading
+
+    await store.receive(.fetchBreedsDomain(.fetchedBreeds(breeds)))
+
+    for breed in breeds {
+      await store.receive(.fetchImageDomain(.fetchImage(breed.id, breed.id)))
+    }
+
+    await store.receive(.localStorageDomain(.storeBreedsLocally(breeds)))
   }
 
   func testFetchNextPageIfLast_WithMatchingId() async {
-    let (store, _) = await makeSUT(breeds: BreedSearchFeatureTests.breedSeedsInitial)
+    let breed = CatBreed(id: "0", name: "Persian", image: .remote("0", "0"))
+    let (store, _) = await makeSUT(breeds: [breed])
 
-    await store.send(.fetchNextPageIfLast(id: "2"))
-    await store.receive(\.fetchNextPage) { state in
-      state.isLoading = true
-      state.failure = nil
+    await store.send(.fetchNextPageIfLast(id: "0"))
+    await store.receive(.fetchBreedsDomain(.fetchNextPage)) { state in
+      state.fetchBreedsState.isLoading = true
     }
 
     await MainActor.run { store.exhaustivity = .off }
+
+    let breeds = TestsSeeds.breedSeedsLoading
+    await store.receive(.fetchBreedsDomain(.fetchedBreeds(breeds))) { state in
+      state.breeds = [breed] + TestsSeeds.breedSeedsLoading
+    }
   }
 
   func testFetchNextPageIfLast_WithNonMatchingId() async {
-    let (store, _) = await makeSUT(breeds: BreedSearchFeatureTests.breedSeedsInitial)
+    let (store, _) = await makeSUT(breeds: TestsSeeds.breedSeedsLoading)
 
     await store.send(.fetchNextPageIfLast(id: "1"))
-  }
-
-  func testHandleBreedsResposne_EmptyResponse() async {
-    let (store, _) = await makeSUT(isLoading: true)
-
-    await store.send(.handleBreedsResponse(.success([]))) { state in
-      state.isLoading = false
-      state.hasMorePages = false
-    }
-  }
-
-  func testHandleBreedsResponse_Failure() async {
-    let (store, _) = await makeSUT(isLoading: true)
-    let error = BreedSearchFeature.BreedSearchError.fetchBreedsFailed(.networkUnavailable)
-
-    await store.send(.handleBreedsResponse(.failure(error))) { state in
-      state.isLoading = false
-      state.currentPage = 0
-      state.hasMorePages = true
-      state.failure = .error(message: "No internet connection. Please try again later.")
-    }
   }
 
   func testUpdateSearchQuery_SameQuery() async {
@@ -120,7 +87,7 @@ final class BreedSearchFeatureTests: XCTestCase {
 
   func testUpdateSearchQuery_EmptyQuery() async {
     let (store, clock) = await makeSUT(
-      breeds: BreedSearchFeatureTests.breedSeedsFinal,
+      breeds: TestsSeeds.breedSeedsRemote,
       searchQuery: "some query"
     )
 
@@ -128,156 +95,62 @@ final class BreedSearchFeatureTests: XCTestCase {
       state.searchQuery = ""
     }
 
+    await MainActor.run { store.exhaustivity = .off }
     await clock.advance(by: .milliseconds(150))
 
     await store.receive(\.handleSearchQuery) { state in
-      state.currentPage = 0
+      state.fetchBreedsState.hasMorePages = true
+      state.fetchBreedsState.currentPage = 0
       state.breeds = []
-      state.hasMorePages = true
     }
 
-    await store.receive(\.fetchNextPage) { state in
-      state.isLoading = true
+    await store.receive(.fetchBreedsDomain(.fetchNextPage)) { state in
+      state.fetchBreedsState.isLoading = true
       state.failure = nil
     }
 
     await MainActor.run { store.exhaustivity = .off }
   }
 
-  func testSearchBreed_Success() async {
-    let query = "bengal"
-    let (store, clock) = await makeSUT()
-
-    await store.send(.updateSearchQueryDebounced(query)) { state in
-      state.searchQuery = query
-    }
-
-    await clock.advance(by: .milliseconds(150))
-
-    await store.receive(\.handleSearchQuery) { state in
-      state.currentPage = 0
-      state.breeds = []
-      state.hasMorePages = false
-    }
-
-    await store.receive(\.searchBreed) { state in
-      state.isLoading = true
-      state.failure = nil
-    }
-
-    let response = CatBreedResponse(id: "1", name: "Bengal")
-    let breedInitial = CatBreed(id: "1", name: "Bengal", image: .loading)
-    let breedFinal = CatBreed(id: "1", name: "Bengal", image: .remote("1"))
-
-    await store.receive(.handleBreedsSearchResponse(.success([response]))) { state in
-      state.isLoading = false
-      state.breeds = [breedInitial]
-    }
-
-    await store.receive(.fetchImage(breedId: "1", imageId: "1"))
-
-    await store.receive(.handleImage(breedId: "1", .success(.remote("1")))) { state in
-      state.breeds = [breedFinal]
-    }
-  }
-
 }
 
 extension BreedSearchFeatureTests {
 
-  static let breedSeedsInitial = [
-    CatBreed(id: "1", name: "Bengal", image: .loading),
-    CatBreed(id: "2", name: "Siamese", image: .loading)
-  ]
-
-  static let breedSeedsFinal = [
-    CatBreed(id: "1", name: "Bengal", image: .remote("1")),
-    CatBreed(id: "2", name: "Siamese", image: .remote("2"))
-  ]
-
-  static let responseSeeds = [
-    CatBreedResponse(id: "1", name: "Bengal"),
-    CatBreedResponse(id: "2", name: "Siamese")
-  ]
-
   private func makeSUT(
     breeds: [CatBreed] = [],
-    isLoading: Bool = false,
-    hasMorePages: Bool = true,
     searchQuery: String = ""
   ) async -> (TestStore<BreedSearchFeature.State, BreedSearchFeature.Action>, TestClock<Duration>) {
-    let responseSeeds = BreedSearchFeatureTests.responseSeeds
+    let breedSearchEnvironment = BreedSearchEnvironment(
+      fetchBreeds: { _, _ in return .success(TestsSeeds.breedSeedsLoading) },
+      searchBreeds: { query in
+        return .success(TestsSeeds.breedSeedsLoading.filter { $0.name.lowercased().contains(query) })
+      },
+      storeBreedsLocally: { _ in return .success },
+      updateBreedIsFavorite: { _, _ in return .success }
+    )
 
-    let testEnvironment = BreedSearchEnvironment { page, limit in
-      return .success(responseSeeds)
-    } searchBreeds: { query in
-      return .success(
-        responseSeeds.filter { $0.name.lowercased().contains(query) }
-      )
-    } fetchImage: { id in
-      return .success(
-        .remote(id)
-      )
-    } storeBreedsLocally: { _ in
-      return .success
-    }
+    let fetchImageEnvironment = FetchImageEnvironment(
+      fetchImageInfo: { id in return .success(.remote(id, id)) },
+      storeImageLocally: { _, _ in return },
+      loadLocalImage: { _ in return Data([0x01, 0x02, 0x03]) },
+      fetchRemoteImageData: { _ in return .success(Data([0x01, 0x02, 0x03])) }
+    )
 
     let clock = TestClock()
 
     return await (TestStore(
       initialState: BreedSearchFeature.State(
         breeds: breeds,
-        searchQuery: searchQuery,
-        isLoading: isLoading,
-        hasMorePages: hasMorePages
+        searchQuery: searchQuery
       )
     ) { BreedSearchFeature() } withDependencies: { dependencies in
-      dependencies.mainQueue = DispatchQueue.test.eraseToAnyScheduler()
-      dependencies.breedSearchEnvironment = testEnvironment
+      dependencies.breedSearchEnvironment = breedSearchEnvironment
+      dependencies.fetchImageEnvironment = fetchImageEnvironment
+      dependencies.favouriteBreedsEnvironment = .preview
+      dependencies.continuousClock = clock
       dependencies.persistentContainer = PersistenceController(inMemory: true).container
       dependencies.catBreedCrud = CatBreedCrud()
-      dependencies.continuousClock = clock
     }, clock)
-  }
-
-}
-
-fileprivate extension CatBreedResponse {
-
-  init(
-    id: String,
-    name: String
-  ) {
-    self.init(
-      id: id,
-      name: name,
-      origin: nil,
-      description: nil,
-      lifespan: "",
-      temperament: "",
-      referenceImageId: id
-    )
-  }
-
-}
-
-fileprivate extension CatBreed {
-
-  init(
-    id: String,
-    name: String,
-    image: ImageSource
-  ) {
-    self.init(
-      id: id,
-      name: name,
-      origin: nil,
-      description: nil,
-      lifespan: "",
-      temperament: "",
-      referenceImageId: id,
-      image: image
-    )
   }
 
 }
