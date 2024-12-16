@@ -95,18 +95,9 @@ extension FavouriteBreedsFeature {
     _ breeds: [CatBreed]
   ) -> Effect<Action> {
     let fetchImageEffects: [Effect<Action>] = breeds.map {
-      if let referenceImageId = $0.referenceImageId {
-        return .send(
-          .fetchImageDomain(
-            .fetchImage($0.id, referenceImageId)
-          )
-        )
-      }
-
-      // TODO: Add fallback image
       return .send(
         .fetchImageDomain(
-          .handleImage($0.id, .success(.assets(.breed)))
+          .fetchImage($0.id, $0.referenceImageId)
         )
       )
     }

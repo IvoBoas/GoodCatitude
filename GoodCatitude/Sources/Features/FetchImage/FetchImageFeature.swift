@@ -18,7 +18,7 @@ struct FetchImageFeature {
   }
 
   enum Action: Equatable {
-    case fetchImage(_ breedId: String, _ imageId: String)
+    case fetchImage(_ breedId: String, _ imageId: String?)
     case fetchRemoteImage(_ breedId: String, _ imageId: String)
     case handleImage(_ breedId: String, Result<ImageSource, BreedSearchFeature.BreedSearchError>)
     case handleImageData(_ breedId: String, _ imageId: String, Result<Data, BreedSearchFeature.BreedSearchError>)
@@ -65,8 +65,12 @@ extension FetchImageFeature {
   private func fetchImage(
     _ state: inout State,
     breedId: String,
-    imageId: String
+    imageId: String?
   ) -> Effect<Action> {
+    guard let imageId else {
+      return .send(.handleImage(breedId, .success(.assets(.defaultBreedAvatar))))
+    }
+
     return .run(priority: .background) { send in
       let localImage = environment.loadLocalImage(imageId)
 
