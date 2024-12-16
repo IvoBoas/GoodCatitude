@@ -44,7 +44,9 @@ extension LocalStorageDomainTests {
   ) async -> TestStore<LocalStorageDomain.State, LocalStorageDomain.Action> {
     let breedSearchEnvironment = BreedSearchEnvironment(
       fetchBreeds: { _, _ in return .success(TestsSeeds.breedSeedsLoading) },
+      fetchLocalBreeds: { _, _ in return TestsSeeds.breedSeedsLoading },
       searchBreeds: { _ in return .success([]) },
+      searchBreedsLocally: { _ in return [] },
       storeBreedsLocally: { _ in return storeBreeds?() ?? .success },
       updateBreedIsFavorite: { _, _ in return .success }
     )

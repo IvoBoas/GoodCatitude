@@ -106,7 +106,7 @@ final class BreedSearchFeatureTests: XCTestCase {
 
     await store.receive(.fetchBreedsDomain(.fetchNextPage)) { state in
       state.fetchBreedsState.isLoading = true
-      state.failure = nil
+      state.alert = nil
     }
 
     await MainActor.run { store.exhaustivity = .off }
@@ -122,8 +122,12 @@ extension BreedSearchFeatureTests {
   ) async -> (TestStore<BreedSearchFeature.State, BreedSearchFeature.Action>, TestClock<Duration>) {
     let breedSearchEnvironment = BreedSearchEnvironment(
       fetchBreeds: { _, _ in return .success(TestsSeeds.breedSeedsLoading) },
+      fetchLocalBreeds: { _, _ in return TestsSeeds.breedSeedsLoading },
       searchBreeds: { query in
         return .success(TestsSeeds.breedSeedsLoading.filter { $0.name.lowercased().contains(query) })
+      },
+      searchBreedsLocally: { query in
+        return TestsSeeds.breedSeedsLoading.filter { $0.name.lowercased().contains(query) }
       },
       storeBreedsLocally: { _ in return .success },
       updateBreedIsFavorite: { _, _ in return .success }

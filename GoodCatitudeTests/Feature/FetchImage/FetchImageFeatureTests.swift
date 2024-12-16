@@ -8,6 +8,7 @@
 import XCTest
 import ComposableArchitecture
 @testable import GoodCatitude
+
 final class FetchImageFeatureTests: XCTestCase {
 
   func testFetchImage_WhenLocalImageExists() async {
@@ -33,8 +34,6 @@ final class FetchImageFeatureTests: XCTestCase {
     await store.receive(.handleImage("breed1", .success(imageInfo)))
     await store.receive(.fetchRemoteImageData("breed1", "image1", "https://example.com/image.jpg"))
     await store.receive(.handleImageData("breed1", "image1", .success(remoteData)))
-
-    // TODO: How to handle concurrency in merge effects?
     await store.receive(.handleImage("breed1", .success(.local("image1", remoteData))))
     await store.receive(.storeImageLocally("image1", remoteData))
     await store.receive(.updateImage("breed1", .local("image1", remoteData)))

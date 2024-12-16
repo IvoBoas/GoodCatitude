@@ -20,7 +20,7 @@ final class SearchBreedsDomainTests: XCTestCase {
 
     let breeds = [CatBreed(id: "1", name: "Bengal", image: .loading)]
 
-    await store.receive(.handleBreedsSearchResponse(.success(breeds))) { state in
+    await store.receive(.handleBreedsSearchResponse("bengal", .success(breeds))) { state in
       state.isLoading = false
     }
 
@@ -29,19 +29,30 @@ final class SearchBreedsDomainTests: XCTestCase {
 
   func testHandleBreedsSearchResponse_Failure() async {
     let error = BreedSearchFeature.BreedSearchError.fetchBreedsFailed(.networkUnavailable)
-    let failureType = BreedSearchFailureMessageHelper.makeFailure(for: error)
+    let failure = BreedSearchFailureMessageHelper.makeFailure(for: error)
+    let query = "Siamese"
 
-    let store = await makeSUT { return .failure(error) }
+    let store = await makeSUT(searchBreedsFailure: error)
 
-    await store.send(.searchBreed("Siamese")) { state in
+    await store.send(.searchBreed(query)) { state in
       state.isLoading = true
     }
 
-    await store.receive(.handleBreedsSearchResponse(.failure(error))) { state in
+    await store.receive(.handleBreedsSearchResponse(query, .failure(error))) { state in
       state.isLoading = false
     }
 
-    await store.receive(.hadFailure(failureType))
+    await store.receive(.hadFailure(failure))
+
+    await store.receive(.searchBreedLocal(query)) { state in
+      state.isLoading = true
+    }
+
+    await store.receive(.handleLocalBreedsSearch([])) { state in
+      state.isLoading = false
+    }
+
+    await store.receive(.updateBreeds([]))
   }
   
 }
@@ -51,14 +62,22 @@ extension SearchBreedsDomainTests {
 
   private func makeSUT(
     isLoading: Bool = false,
-    searchBreeds: (() -> Result<[CatBreed], BreedSearchFeature.BreedSearchError>)? = nil
+    searchBreedsFailure: BreedSearchFeature.BreedSearchError? = nil
   ) async -> TestStore<SearchBreedsDomain.State, SearchBreedsDomain.Action> {
     let breedSearchEnvironment = BreedSearchEnvironment(
       fetchBreeds: { _, _ in return .success(TestsSeeds.breedSeedsLoading) },
+      fetchLocalBreeds: { _, _ in return TestsSeeds.breedSeedsLoading },
       searchBreeds: { query in
-        return searchBreeds?() ?? .success(
+        if let searchBreedsFailure {
+          return .failure(searchBreedsFailure)
+        }
+
+        return .success(
           TestsSeeds.breedSeedsLoading.filter { $0.name.lowercased().contains(query) }
         )
+      },
+      searchBreedsLocally: { query in
+        return []
       },
       storeBreedsLocally: { _ in return .success },
       updateBreedIsFavorite: { _, _ in return .success }
