@@ -13,9 +13,11 @@ struct BreedSearchFeature {
   
   @ObservableState
   struct State: Equatable {
+
+    @Presents var alert: AlertState<Action.Alert>?
+
     var breeds: [CatBreed] = []
     var searchQuery: String = ""
-    var failure: FailureType?
     
     var fetchBreedsState = FetchBreedsDomain.State()
     var fetchImageState = FetchImageFeature.State()
@@ -38,6 +40,12 @@ struct BreedSearchFeature {
     case fetchImageDomain(FetchImageFeature.Action)
     case searchBreedsDomain(SearchBreedsDomain.Action)
     case localStorageDomain(LocalStorageDomain.Action)
+
+    case alert(PresentationAction<Alert>)
+
+    enum Alert: Equatable {
+
+    }
   }
   
   enum BreedSearchError: Error, Equatable {
@@ -83,6 +91,9 @@ struct BreedSearchFeature {
           .send(.fetchBreedsDomain(.fetchNextPage))
         )
 
+      case .alert:
+        return .none
+
       case .fetchNextPageIfLast(let id):
         return fetchNextPageIfLast(&state, id: id)
         
@@ -105,6 +116,7 @@ struct BreedSearchFeature {
         return handleLocalStorageDomainAction(&state, action: action)      
       }
     }
+    .ifLet(\.$alert, action: \.alert)
   }
   
 }
@@ -165,7 +177,7 @@ extension BreedSearchFeature {
       
     case .fetchNextPage:
       if state.fetchBreedsState.canLoadNextPage {
-        state.failure = nil
+        state.alert = nil
       }
       
       return .none
@@ -182,8 +194,10 @@ extension BreedSearchFeature {
       )
       
     case .hadFailure(let failure):
-      state.failure = failure
-      
+      state.alert = AlertState {
+        TextState(failure.message)
+      } actions: { }
+
       return .none
     }
   }
@@ -205,9 +219,7 @@ extension BreedSearchFeature {
       
       return .none
       
-    case .hadFailure(let failure):
-      state.failure = failure
-      
+    case .hadFailure:
       return .none
     }
   }
@@ -219,8 +231,8 @@ extension BreedSearchFeature {
   ) -> Effect<Action> {
     switch action {
     case .searchBreed, .searchBreedLocal:
-      state.failure = nil
-      
+      state.alert = nil
+
       return .none
       
     case .handleBreedsSearchResponse, .handleLocalBreedsSearch:
@@ -235,8 +247,10 @@ extension BreedSearchFeature {
       )
       
     case .hadFailure(let failure):
-      state.failure = failure
-      
+      state.alert = AlertState {
+        TextState(failure.message)
+      } actions: { }
+
       return .none
     }
   }
@@ -253,9 +267,7 @@ extension BreedSearchFeature {
     case .handleStoreResult:
       return .none
       
-    case .hadFailure(let failure):
-      state.failure = failure
-      
+    case .hadFailure:
       return .none
     }
   }

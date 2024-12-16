@@ -29,13 +29,13 @@ extension BreedSearchFailureMessageHelper {
   private static func makeErrorMessage(for error: HttpError) -> String {
     switch error {
     case .networkUnavailable:
-      return "No internet connection. Please try again later."
+      return "No internet connection. Results shown may be outdated."
 
     case .invalidResponse:
-      return "Received invalid data from the server."
+      return "Received invalid data from the server. Results shown may be outdated."
 
     case .unknown:
-      return "Failed to fetch cat breeds. Please try again later."
+      return "Failed to fetch cat breeds. Results shown may be outdated."
     }
   }
 

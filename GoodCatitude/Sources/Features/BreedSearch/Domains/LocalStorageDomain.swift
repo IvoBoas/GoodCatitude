@@ -19,7 +19,7 @@ struct LocalStorageDomain {
     case storeBreedsLocally([CatBreed])
     case handleStoreResult(EmptyResult<CrudError>)
     
-    case hadFailure(FailureType?)
+    case hadFailure(FailureType)
   }
 
   @Dependency(\.breedSearchEnvironment) var environment

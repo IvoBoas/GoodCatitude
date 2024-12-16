@@ -55,6 +55,7 @@ struct BreedSearchView: View {
       .onAppear {
         viewStore.send(.onAppear)
       }
+      .alert($store.scope(state: \.alert, action: \.alert))
     }
   }
 

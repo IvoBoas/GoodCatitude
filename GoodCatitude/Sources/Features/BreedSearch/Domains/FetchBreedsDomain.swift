@@ -82,15 +82,15 @@ extension FetchBreedsDomain {
 
     if state.fetchingLocal {
       return .run { [page = state.currentPage, limit = state.pageLimit] send in
-        let result = await environment.fetchBreeds(page, limit)
-
-        await send(.handleBreedsResponse(result))
-      }
-    } else {
-      return .run { [page = state.currentPage, limit = state.pageLimit] send in
         let breeds = await environment.fetchLocalBreeds(page, limit)
 
         await send(.handleLocalBreeds(breeds))
+      }
+    } else {
+      return .run { [page = state.currentPage, limit = state.pageLimit] send in
+        let result = await environment.fetchBreeds(page, limit)
+
+        await send(.handleBreedsResponse(result))
       }
     }
   }

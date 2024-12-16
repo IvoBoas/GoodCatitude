@@ -8,7 +8,6 @@
 import Foundation
 import ComposableArchitecture
 
-// TODO: Error control
 struct ImageStorageManager {
 
   private static let directory: URL = {
