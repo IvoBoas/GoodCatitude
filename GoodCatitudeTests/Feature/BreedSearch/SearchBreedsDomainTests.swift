@@ -63,7 +63,7 @@ extension SearchBreedsDomainTests {
   private func makeSUT(
     isLoading: Bool = false,
     searchBreedsFailure: BreedSearchFeature.BreedSearchError? = nil
-  ) async -> TestStore<SearchBreedsDomain.State, SearchBreedsDomain.Action> {
+  ) async -> TestStoreOf<SearchBreedsDomain> {
     let breedSearchEnvironment = BreedSearchEnvironment(
       fetchBreeds: { _, _ in return .success(TestsSeeds.breedSeedsLoading) },
       fetchLocalBreeds: { _, _ in return TestsSeeds.breedSeedsLoading },
@@ -79,8 +79,7 @@ extension SearchBreedsDomainTests {
       searchBreedsLocally: { query in
         return []
       },
-      storeBreedsLocally: { _ in return .success },
-      updateBreedIsFavorite: { _, _ in return .success }
+      storeBreedsLocally: { _ in return .success }
     )
 
     return await TestStore(

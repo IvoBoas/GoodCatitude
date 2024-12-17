@@ -22,6 +22,7 @@ struct FavouriteBreedsFeature {
   enum Action: Equatable {
     case onAppear
     case reloadFavourites
+    case toggleFavourite(_ id: String, _ value: Bool)
     case handleFavourites([CatBreed])
 
     case fetchImageDomain(FetchImageFeature.Action)
@@ -51,6 +52,19 @@ struct FavouriteBreedsFeature {
 
           await send(.handleFavourites(favourites))
         }.cancellable(id: "feature.favourites.reload", cancelInFlight: true)
+
+      case .toggleFavourite(let id, let value):
+        return .run { [breeds = state.breeds] send in
+          _ = await environment.updateBreedIsFavorite(id, value)
+
+          if value {
+            await send(.reloadFavourites)
+          } else {
+            let favourites = breeds.filter { $0.id != id }
+
+            await send(.handleFavourites(favourites))
+          }
+        }.cancellable(id: "breedDetails.updateEntity", cancelInFlight: true)
 
       case .handleFavourites(let favourites):
         state.isLoading = false

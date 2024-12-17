@@ -119,7 +119,7 @@ extension BreedSearchFeatureTests {
   private func makeSUT(
     breeds: [CatBreed] = [],
     searchQuery: String = ""
-  ) async -> (TestStore<BreedSearchFeature.State, BreedSearchFeature.Action>, TestClock<Duration>) {
+  ) async -> (TestStoreOf<BreedSearchFeature>, TestClock<Duration>) {
     let breedSearchEnvironment = BreedSearchEnvironment(
       fetchBreeds: { _, _ in return .success(TestsSeeds.breedSeedsLoading) },
       fetchLocalBreeds: { _, _ in return TestsSeeds.breedSeedsLoading },
@@ -129,8 +129,7 @@ extension BreedSearchFeatureTests {
       searchBreedsLocally: { query in
         return TestsSeeds.breedSeedsLoading.filter { $0.name.lowercased().contains(query) }
       },
-      storeBreedsLocally: { _ in return .success },
-      updateBreedIsFavorite: { _, _ in return .success }
+      storeBreedsLocally: { _ in return .success }
     )
 
     let fetchImageEnvironment = FetchImageEnvironment(

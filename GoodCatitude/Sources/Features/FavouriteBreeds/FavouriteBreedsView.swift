@@ -26,8 +26,14 @@ struct FavouriteBreedsView: View {
             NavigationLink(state: BreedDetailsFeature.State(breed: breed)) {
               CatBreedEntryView(breed: breed, showLifespan: true)
                 .frame(maxHeight: .infinity, alignment: .top)
+                .overlay(alignment: .topTrailing) {
+                  Button { viewStore.send(.toggleFavourite(breed.id, !breed.isFavourite)) } label: {
+                    Image(systemName: breed.isFavourite ? "heart.fill" : "heart")
+                      .foregroundStyle(.red)
+                      .padding(4)
+                  }
+                }
             }
-            .buttonStyle(.borderless)
           }
         }
         .padding(

@@ -27,7 +27,7 @@ struct AppFeature {
 
   enum Action: Equatable {
     case tabSelected(Tab)
-    case path(StackAction<BreedDetailsFeature.State, BreedDetailsFeature.Action>)
+    case path(StackActionOf<BreedDetailsFeature>)
 
     case searchAction(BreedSearchFeature.Action)
     case favouritesAction(FavouriteBreedsFeature.Action)
@@ -52,6 +52,20 @@ struct AppFeature {
 
       case .path(.element(let id, .propagateChanges)):
         return propagateFavouriteBreedAction(&state, pathId: id)
+
+      case .searchAction(.toggleFavourite(let id, let value)):
+        return .send(.favouritesAction(.toggleFavourite(id, value)))
+
+      case .favouritesAction(.handleFavourites(let favourites)):
+        state.searchState.breeds = state.searchState.breeds.map { breed in
+          var updated = breed
+
+          updated.isFavourite = favourites.contains { $0.id == breed.id }
+
+          return updated
+        }
+
+        return .none
 
       case .searchAction, .detailsAction, .favouritesAction, .path:
         return .none

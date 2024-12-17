@@ -18,7 +18,7 @@ struct BreedSearchFeature {
 
     var breeds: [CatBreed] = []
     var searchQuery: String = ""
-    
+
     var fetchBreedsState = FetchBreedsDomain.State()
     var fetchImageState = FetchImageFeature.State()
     var searchBreedsState = SearchBreedsDomain.State()
@@ -35,7 +35,8 @@ struct BreedSearchFeature {
     case fetchNextPageIfLast(id: String)
     case updateSearchQueryDebounced(String)
     case handleSearchQuery
-    
+    case toggleFavourite(_ id: String, to: Bool)
+
     case fetchBreedsDomain(FetchBreedsDomain.Action)
     case fetchImageDomain(FetchImageFeature.Action)
     case searchBreedsDomain(SearchBreedsDomain.Action)
@@ -92,6 +93,13 @@ struct BreedSearchFeature {
         )
 
       case .alert:
+        return .none
+
+      case .toggleFavourite(let id, let value):
+        if let index = state.breeds.firstIndex(where: { $0.id == id }) {
+          state.breeds[index].isFavourite = value
+        }
+
         return .none
 
       case .fetchNextPageIfLast(let id):

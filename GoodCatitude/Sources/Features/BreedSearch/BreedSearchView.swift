@@ -33,10 +33,7 @@ struct BreedSearchView: View {
         ScrollView {
           LazyVGrid(columns: gridColumns, spacing: 16) {
             ForEach(viewStore.breeds, id: \.id) { breed in
-              NavigationLink(state: BreedDetailsFeature.State(breed: breed)) {
-                BreedItemView(breed: breed, viewStore: viewStore)
-              }
-              .buttonStyle(.borderless)
+              BreedItemView(breed: breed, viewStore: viewStore)
             }
           }
           .padding(
@@ -64,13 +61,20 @@ struct BreedSearchView: View {
 private struct BreedItemView: View {
 
   let breed: CatBreed
-  let viewStore: ViewStore<BreedSearchFeature.State, BreedSearchFeature.Action>
+  let viewStore: ViewStoreOf<BreedSearchFeature>
 
   var body: some View {
     NavigationLink(state: BreedDetailsFeature.State(breed: breed)) {
       CatBreedEntryView(breed: breed, showLifespan: false)
         .frame(maxHeight: .infinity, alignment: .top)
-        .overlay(favoriteOverlay)
+        .overlay(alignment: .topTrailing) {
+          Button { viewStore.send(.toggleFavourite(breed.id, to: !breed.isFavourite)) } label: {
+            Image(systemName: breed.isFavourite ? "heart.fill" : "heart")
+              .foregroundStyle(.red)
+              .padding(4)
+              .shadow(color: .black, radius: 10)
+          }
+        }
         .onAppear {
           viewStore.send(.fetchNextPageIfLast(id: breed.id))
         }
@@ -78,15 +82,6 @@ private struct BreedItemView: View {
     .buttonStyle(.borderless)
   }
 
-  @ViewBuilder
-  private var favoriteOverlay: some View {
-    if breed.isFavourite {
-      Image(systemName: "heart.fill")
-        .foregroundStyle(.red)
-        .padding(4)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-    }
-  }
 }
 
 #Preview {

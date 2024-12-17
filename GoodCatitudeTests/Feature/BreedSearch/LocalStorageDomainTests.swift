@@ -41,14 +41,13 @@ extension LocalStorageDomainTests {
 
   private func makeSUT(
     storeBreeds: (() -> EmptyResult<CrudError>)? = nil
-  ) async -> TestStore<LocalStorageDomain.State, LocalStorageDomain.Action> {
+  ) async -> TestStoreOf<LocalStorageDomain> {
     let breedSearchEnvironment = BreedSearchEnvironment(
       fetchBreeds: { _, _ in return .success(TestsSeeds.breedSeedsLoading) },
       fetchLocalBreeds: { _, _ in return TestsSeeds.breedSeedsLoading },
       searchBreeds: { _ in return .success([]) },
       searchBreedsLocally: { _ in return [] },
-      storeBreedsLocally: { _ in return storeBreeds?() ?? .success },
-      updateBreedIsFavorite: { _, _ in return .success }
+      storeBreedsLocally: { _ in return storeBreeds?() ?? .success }
     )
 
     return await TestStore(

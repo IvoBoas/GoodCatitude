@@ -107,7 +107,7 @@ extension FetchBreedsDomainTests {
     isLoading: Bool = false,
     fetchingLocal: Bool = false,
     fetchBreeds: (() -> Result<[CatBreed], BreedSearchFeature.BreedSearchError>)? = nil
-  ) async -> TestStore<FetchBreedsDomain.State, FetchBreedsDomain.Action> {
+  ) async -> TestStoreOf<FetchBreedsDomain> {
     let breedSearchEnvironment = BreedSearchEnvironment(
       fetchBreeds: { _, _ in
         if let fetchBreeds {
@@ -125,8 +125,7 @@ extension FetchBreedsDomainTests {
       searchBreedsLocally: { query in
         return TestsSeeds.breedSeedsLoading.filter { $0.name.lowercased().contains(query) }
       },
-      storeBreedsLocally: { _ in return .success },
-      updateBreedIsFavorite: { _, _ in return .success }
+      storeBreedsLocally: { _ in return .success }
     )
 
     return await TestStore(

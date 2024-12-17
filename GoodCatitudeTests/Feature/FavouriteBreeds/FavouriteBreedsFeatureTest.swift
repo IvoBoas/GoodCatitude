@@ -23,7 +23,6 @@ final class FavouriteBreedsFeatureTest: XCTestCase {
     await store.send(.onAppear)
   }
 
-
   func testOnAppear_WhenBreedsEmpty() async {
     let breeds = TestsSeeds.breedSeedsRemote
     let store = await makeSUT(fetchedFavouriteBreeds: breeds)
@@ -60,6 +59,43 @@ final class FavouriteBreedsFeatureTest: XCTestCase {
     await store.receive(.fetchImageDomain(.fetchImage("2", "2")))
   }
 
+  func testToggleFavourite_AddedFavourite() async {
+    let favourite = CatBreed(id: "1", name: "Bengal", isFavourite: true, image: .loading)
+    let new = CatBreed(id: "2", name: "Siamese", isFavourite: true, image: .loading)
+    let store = await makeSUT(favouriteBreeds: [favourite], fetchedFavouriteBreeds: [favourite, new])
+
+    await store.send(.toggleFavourite("2", true))
+
+    await store.receive(.reloadFavourites) { state in
+      state.isLoading = true
+    }
+
+    await store.receive(.handleFavourites([favourite, new])) { state in
+      state.isLoading = false
+      state.breeds = [favourite, new]
+    }
+
+    // Fetch images
+    await MainActor.run { store.exhaustivity = .off }
+  }
+
+  func testToggleFavourite_RemovedFavourite() async {
+    let favourite = CatBreed(id: "1", name: "Bengal", isFavourite: true, image: .loading)
+    let removed = CatBreed(id: "2", name: "Siamese", isFavourite: true, image: .loading)
+    let store = await makeSUT(favouriteBreeds: [favourite, removed], fetchedFavouriteBreeds: [favourite])
+
+    await store.send(.toggleFavourite("2", false))
+
+
+    await store.receive(.handleFavourites([favourite])) { state in
+      state.isLoading = false
+      state.breeds = [favourite]
+    }
+
+    // Fetch images
+    await MainActor.run { store.exhaustivity = .off }
+  }
+
 }
 
 
@@ -69,9 +105,10 @@ extension FavouriteBreedsFeatureTest {
     favouriteBreeds: [CatBreed] = [],
     isLoading: Bool = false,
     fetchedFavouriteBreeds: [CatBreed] = TestsSeeds.breedSeedsRemote
-  ) async -> TestStore<FavouriteBreedsFeature.State, FavouriteBreedsFeature.Action> {
+  ) async -> TestStoreOf<FavouriteBreedsFeature> {
     let environment = FavouriteBreedsEnvironment(
-      fetchFavouriteBreeds: { return fetchedFavouriteBreeds }
+      fetchFavouriteBreeds: { return fetchedFavouriteBreeds },
+      updateBreedIsFavorite: { _, _ in return .success }
     )
 
     return await TestStore(

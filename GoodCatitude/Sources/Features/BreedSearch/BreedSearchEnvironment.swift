@@ -16,7 +16,6 @@ struct BreedSearchEnvironment {
   var searchBreeds: (_ query: String) async -> Result<[CatBreed], BreedSearchFeature.BreedSearchError>
   var searchBreedsLocally: (_ query: String) async -> [CatBreed]
   var storeBreedsLocally: (_ breeds: [CatBreed]) async -> EmptyResult<CrudError>
-  var updateBreedIsFavorite: (_ id: String, _ value: Bool) async -> EmptyResult<CrudError>
 
 }
 
@@ -28,8 +27,7 @@ extension BreedSearchEnvironment {
     fetchLocalBreeds: fetchLocalBreedsImplementation,
     searchBreeds: searchBreedsImplementation,
     searchBreedsLocally: searchBreedsLocallyImplementation,
-    storeBreedsLocally: storeBreedsLocallyImplementation,
-    updateBreedIsFavorite: updateBreedIsFavoriteImplementation
+    storeBreedsLocally: storeBreedsLocallyImplementation
   )
 
   private static func fetchBreedsImplementation(
@@ -147,24 +145,6 @@ extension BreedSearchEnvironment {
     }
   }
 
-  private static func updateBreedIsFavoriteImplementation(
-    id: String,
-    value: Bool
-  ) async -> EmptyResult<CrudError>{
-    @Dependency(\.catBreedCrud) var crud
-    @Dependency(\.persistentContainer) var container
-
-    let context = container.newBackgroundContext()
-
-    return await context.perform {
-      let entity = crud.getCatBreed(id, moc: context)
-
-      entity?.isFavourite = value
-
-      return context.saveIfNeeded()
-    }
-  }
-
   private static func injectIsFavourite(
     _ responses: [CatBreedResponse]
   ) async -> [CatBreed] {
@@ -204,8 +184,6 @@ extension BreedSearchEnvironment {
     return generateMockBreeds(page: 0, limit: 10)
       .filter { $0.name.lowercased().contains(query.lowercased()) }
   } storeBreedsLocally: { _ in
-    return .success
-  } updateBreedIsFavorite: { _, _ in
     return .success
   }
 

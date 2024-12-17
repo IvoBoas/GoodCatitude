@@ -12,7 +12,6 @@ A simple *SwiftUI* application that allows users to search for cat breeds, view 
   - [Searching breeds](#searching-breeds)
 - [Breed Details Feature](#breed-details-feature)
 - [Favourite Breeds Feature](#favourite-breeds-feature)
-- [Future Improvements](#future-improvements)
 
 
 ## Architecture
@@ -77,7 +76,7 @@ A simple *SwiftUI* application that allows users to search for cat breeds, view 
 ## Favourite Breeds Feature
 - Breeds marked as favourites are shown to the user on a grid on the Favourite Breeds screen.
 - These breeds are stored locally with a flag `isFavourite` set to `true`.
-- Whenever the user toggles a breed favourite status in the [Breed Details screen](#breed-details-feature) the *AppFeature* will trigger a reload on this feature. This reload will fetch all favourite breeds from the local database.
+- Whenever the user toggles a breed favourite status the *AppFeature* will trigger a reload on this feature. This reload will fetch all favourite breeds from the local database.
 
 <p align="center">
 <img src="readme_resources/favourite_breeds.PNG?raw=true" width="300">

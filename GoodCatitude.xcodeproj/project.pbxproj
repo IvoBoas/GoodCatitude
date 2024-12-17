@@ -13,7 +13,6 @@
 		D73E47742D0AEFC800CF0181 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D73E47732D0AEFC800CF0181 /* Preview Assets.xcassets */; };
 		D73E47762D0AEFC800CF0181 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73E47752D0AEFC800CF0181 /* Persistence.swift */; };
 		D73E47792D0AEFC800CF0181 /* GoodCatitude.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D73E47772D0AEFC800CF0181 /* GoodCatitude.xcdatamodeld */; };
-		D73E47832D0AEFC800CF0181 /* GoodCatitudeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73E47822D0AEFC800CF0181 /* GoodCatitudeTests.swift */; };
 		D73E478D2D0AEFC800CF0181 /* GoodCatitudeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73E478C2D0AEFC800CF0181 /* GoodCatitudeUITests.swift */; };
 		D73E478F2D0AEFC800CF0181 /* GoodCatitudeUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73E478E2D0AEFC800CF0181 /* GoodCatitudeUITestsLaunchTests.swift */; };
 		D78102022D0DA1ED00F5EBE5 /* BreedSearchFailureMessageHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78102012D0DA1ED00F5EBE5 /* BreedSearchFailureMessageHelper.swift */; };
@@ -91,7 +90,6 @@
 		D73E47752D0AEFC800CF0181 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		D73E47782D0AEFC800CF0181 /* GoodCatitude.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = GoodCatitude.xcdatamodel; sourceTree = "<group>"; };
 		D73E477E2D0AEFC800CF0181 /* GoodCatitudeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GoodCatitudeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		D73E47822D0AEFC800CF0181 /* GoodCatitudeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoodCatitudeTests.swift; sourceTree = "<group>"; };
 		D73E47882D0AEFC800CF0181 /* GoodCatitudeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GoodCatitudeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D73E478C2D0AEFC800CF0181 /* GoodCatitudeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoodCatitudeUITests.swift; sourceTree = "<group>"; };
 		D73E478E2D0AEFC800CF0181 /* GoodCatitudeUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoodCatitudeUITestsLaunchTests.swift; sourceTree = "<group>"; };
@@ -205,7 +203,6 @@
 				D7862B5D2D102C8800B094D7 /* Tests+Helpers.swift */,
 				D7862B5F2D102C9400B094D7 /* Tests+Seeds.swift */,
 				D7B62DCE2D0B92B500128C96 /* Feature */,
-				D73E47822D0AEFC800CF0181 /* GoodCatitudeTests.swift */,
 			);
 			path = GoodCatitudeTests;
 			sourceTree = "<group>";
@@ -636,7 +633,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D73E47832D0AEFC800CF0181 /* GoodCatitudeTests.swift in Sources */,
 				D7862B5E2D102C8800B094D7 /* Tests+Helpers.swift in Sources */,
 				D7862B582D1022C600B094D7 /* FetchBreedsDomainTests.swift in Sources */,
 				D7862B632D102E2900B094D7 /* FetchImageFeatureTests.swift in Sources */,

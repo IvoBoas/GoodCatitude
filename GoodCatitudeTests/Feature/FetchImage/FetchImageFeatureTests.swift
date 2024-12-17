@@ -58,7 +58,7 @@ extension FetchImageFeatureTests {
     imageInfo: Result<ImageSource, BreedSearchFeature.BreedSearchError> = .success(.remote("1", "1")),
     localImage: Data? = Data([0x01, 0x02, 0x03]),
     remoteImageData: Result<Data, BreedSearchFeature.BreedSearchError> = .success(Data([0x01, 0x02, 0x03]))
-  ) async -> TestStore<FetchImageFeature.State, FetchImageFeature.Action> {
+  ) async -> TestStoreOf<FetchImageFeature> {
     let fetchImageEnvironment = FetchImageEnvironment(
       fetchImageInfo: { _ in return imageInfo },
       storeImageLocally: { _, _ in },

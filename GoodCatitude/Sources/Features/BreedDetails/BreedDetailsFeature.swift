@@ -24,7 +24,7 @@ struct BreedDetailsFeature {
     case hadFailure(FailureType)
   }
 
-  @Dependency(\.breedSearchEnvironment) var environment
+  @Dependency(\.favouriteBreedsEnvironment) var environment
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
@@ -35,7 +35,7 @@ struct BreedDetailsFeature {
         return .send(.updateEntity)
 
       case .updateEntity:
-        return .run { [id = state.breed.id, value = state.breed.isFavourite]send in
+        return .run { [id = state.breed.id, value = state.breed.isFavourite] send in
           let result = await environment.updateBreedIsFavorite(id, value)
 
           await send(.handleStorageResult(result))
