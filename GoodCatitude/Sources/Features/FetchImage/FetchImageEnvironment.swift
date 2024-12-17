@@ -58,7 +58,7 @@ extension FetchImageEnvironment {
 
   private static func tryToCompressData(
     _ data: Data,
-    compression: CGFloat = 0.1
+    compression: CGFloat = 0.5
   ) -> Data {
     if let compressData = UIImage(data: data)?.jpegData(compressionQuality: compression) {
       return compressData

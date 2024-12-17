@@ -34,6 +34,43 @@ final class BreedSearchFeatureTests: XCTestCase {
     await MainActor.run { store.exhaustivity = .off }
   }
 
+  func testReload_SearchQueryIsEmpty() async {
+    let (store, _) = await makeSUT(
+      searchQuery: "",
+      fetchState: FetchBreedsDomain.State(
+        currentPage: 3,
+        hasMorePages: false
+      )
+    )
+
+    await store.send(.reload)
+    await store.receive(.handleSearchQuery)
+    await store.receive(.fetchBreedsDomain(.resetPagination)) { state in
+      state.fetchBreedsState.isLoading = false
+      state.fetchBreedsState.hasMorePages = true
+      state.fetchBreedsState.currentPage = 0
+    }
+
+    await store.receive(.fetchBreedsDomain(.fetchNextPage)) { state in
+      state.fetchBreedsState.isLoading = true
+    }
+
+    await MainActor.run { store.exhaustivity = .off }
+  }
+
+  func testReload_SearchQueryHasValue() async {
+    let (store, _) = await makeSUT(searchQuery: "Siamese")
+
+    await store.send(.reload)
+    await store.receive(.handleSearchQuery)
+    await store.receive(.fetchBreedsDomain(.resetPagination))
+    await store.receive(.searchBreedsDomain(.searchBreed("Siamese"))) { state in
+      state.searchBreedsState.isLoading = true
+    }
+
+    await MainActor.run { store.exhaustivity = .off }
+  }
+
   func testFetchNextPageIfLast_WithEmptyBreeds() async {
     let (store, _) = await makeSUT()
 
@@ -118,7 +155,8 @@ extension BreedSearchFeatureTests {
 
   private func makeSUT(
     breeds: [CatBreed] = [],
-    searchQuery: String = ""
+    searchQuery: String = "",
+    fetchState: FetchBreedsDomain.State = FetchBreedsDomain.State()
   ) async -> (TestStoreOf<BreedSearchFeature>, TestClock<Duration>) {
     let breedSearchEnvironment = BreedSearchEnvironment(
       fetchBreeds: { _, _ in return .success(TestsSeeds.breedSeedsLoading) },
@@ -144,7 +182,8 @@ extension BreedSearchFeatureTests {
     return await (TestStore(
       initialState: BreedSearchFeature.State(
         breeds: breeds,
-        searchQuery: searchQuery
+        searchQuery: searchQuery,
+        fetchBreedsState: fetchState
       )
     ) { BreedSearchFeature() } withDependencies: { dependencies in
       dependencies.breedSearchEnvironment = breedSearchEnvironment

@@ -28,6 +28,7 @@ struct BreedSearchView: View {
           )
         )
         .textFieldStyle(.roundedBorder)
+        .autocorrectionDisabled()
         .padding(horizontal: 24)
 
         ScrollView {
@@ -72,7 +73,6 @@ private struct BreedItemView: View {
             Image(systemName: breed.isFavourite ? "heart.fill" : "heart")
               .foregroundStyle(.red)
               .padding(4)
-              .shadow(color: .black, radius: 10)
           }
         }
         .onAppear {
