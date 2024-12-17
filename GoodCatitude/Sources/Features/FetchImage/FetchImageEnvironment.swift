@@ -53,8 +53,34 @@ extension FetchImageEnvironment {
   ) async -> Result<Data, BreedSearchFeature.BreedSearchError> {
     return await HttpClient.getDataRequest(from: url)
       .mapError { .fetchBreedsFailed($0) }
+      .map { tryToCompressData($0) }
   }
 
+  private static func tryToCompressData(
+    _ data: Data,
+    compression: CGFloat = 0.1
+  ) -> Data {
+    if let compressData = UIImage(data: data)?.jpegData(compressionQuality: compression) {
+      return compressData
+    }
+
+    return data
+  }
+
+}
+
+fileprivate extension UIImage {
+  func resized(to targetSize: CGSize) -> UIImage {
+    let format = UIGraphicsImageRendererFormat()
+
+    format.scale = 1
+
+    let renderer = UIGraphicsImageRenderer(size: targetSize, format: format)
+
+    return renderer.image { _ in
+      self.draw(in: CGRect(origin: .zero, size: targetSize))
+    }
+  }
 }
 
 // MARK: Preview Implementation

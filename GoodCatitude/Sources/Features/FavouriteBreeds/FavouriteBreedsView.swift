@@ -24,7 +24,7 @@ struct FavouriteBreedsView: View {
         LazyVGrid(columns: gridColumns, spacing: 16) {
           ForEach(viewStore.breeds, id: \.id) { breed in
             NavigationLink(state: BreedDetailsFeature.State(breed: breed)) {
-              CatBreedEntryView(breed: breed)
+              CatBreedEntryView(breed: breed, showLifespan: true)
                 .frame(maxHeight: .infinity, alignment: .top)
             }
             .buttonStyle(.borderless)
@@ -42,6 +42,7 @@ struct FavouriteBreedsView: View {
       }
       .scrollIndicators(.hidden)
       .onAppear { viewStore.send(.onAppear) }
+      .refreshable { viewStore.send(.reloadFavourites) }
     }
   }
 

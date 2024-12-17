@@ -12,6 +12,7 @@ A simple *SwiftUI* application that allows users to search for cat breeds, view 
   - [Searching breeds](#searching-breeds)
 - [Breed Details Feature](#breed-details-feature)
 - [Favourite Breeds Feature](#favourite-breeds-feature)
+- [Future Improvements](#future-improvements)
 
 
 ## Architecture
@@ -28,7 +29,7 @@ A simple *SwiftUI* application that allows users to search for cat breeds, view 
 
 ## Breed Search Feature
 - This feature is responsible for listing and searching cat breeds.
-- Breeds are first displayed as a grid sorted by name. This grid is built using *LazyVGrid* for lazy view initialization.
+- Breeds are first displayed as a grid sorted by name. This grid is built using `LazyVGrid` for lazy view initialization.
 
 <p align="center">
   <img src="readme_resources/breeds_screen.PNG?raw=true" width="300" />

@@ -14,6 +14,7 @@ struct CatBreedEntryView: View {
   @Environment(\.colorScheme) var scheme
 
   let breed: CatBreed
+  let showLifespan: Bool
 
   var body: some View {
     CatBreedEntryImage(source: breed.image)
@@ -28,16 +29,36 @@ struct CatBreedEntryView: View {
             endPoint: .bottom
           )
 
-          Text(breed.name)
-            .font(.caption2.bold())
-            .lineLimit(2)
-            .multilineTextAlignment(.leading)
-            .foregroundStyle(.white)
+          makeOverlay()
             .padding(.horizontal, 4)
             .padding(.bottom, 8)
         }
       }
       .clipShape(RoundedRectangle(cornerRadius: 8))
+  }
+
+  @ViewBuilder
+  private func makeOverlay() -> some View {
+    if showLifespan {
+      VStack(alignment: .leading, spacing: 2) {
+        Text(breed.name)
+          .font(.caption2.bold())
+          .lineLimit(2)
+          .multilineTextAlignment(.leading)
+          .foregroundStyle(.white)
+
+        Text("\(breed.lifespan) years")
+          .font(.caption2.bold())
+          .multilineTextAlignment(.leading)
+          .foregroundStyle(.gray)
+      }
+    } else {
+      Text(breed.name)
+        .font(.caption2.bold())
+        .lineLimit(2)
+        .multilineTextAlignment(.leading)
+        .foregroundStyle(.white)
+    }
   }
 
 }
@@ -86,11 +107,12 @@ struct CatBreedEntryImage: View {
       countryCode: nil,
       origin: nil,
       description: nil,
-      lifespan: "",
+      lifespan: "15",
       temperament: "",
       isFavourite: true,
       referenceImageId: "1",
       image: .assets(.breed)
-    )
+    ),
+    showLifespan: false
   )
 }

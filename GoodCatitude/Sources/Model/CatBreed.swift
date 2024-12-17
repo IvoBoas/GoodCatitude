@@ -53,11 +53,23 @@ struct CatBreed: Equatable, Identifiable {
     self.countryCode = response.countryCode
     self.origin = response.origin
     self.description = response.description
-    self.lifespan = response.lifespan
     self.temperament = response.temperament
     self.referenceImageId = response.referenceImageId
     self.isFavourite = isFavourite
     self.image = .loading
+    self.lifespan = response.lifespan
+      .replacingOccurrences(of: " ", with: "")
+      .split(separator: "-")
+      .last?
+      .toString() ?? response.lifespan
+  }
+
+}
+
+extension String.SubSequence {
+
+  func toString() -> String {
+    return String(self)
   }
 
 }

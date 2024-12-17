@@ -68,7 +68,7 @@ private struct BreedItemView: View {
 
   var body: some View {
     NavigationLink(state: BreedDetailsFeature.State(breed: breed)) {
-      CatBreedEntryView(breed: breed)
+      CatBreedEntryView(breed: breed, showLifespan: false)
         .frame(maxHeight: .infinity, alignment: .top)
         .overlay(favoriteOverlay)
         .onAppear {
